@@ -15,7 +15,7 @@ Python 3 based event player for Raspberry Pi with GPIO control.
 Licensing
 =========
 
-The source code for PyPiCtrl is open-source and licensed under MIT_.
+The source code for Pi3Ctrl is open-source and licensed under MIT_.
 
 .. _MIT: https://raw.githubusercontent.com/psmsmets/pi3ctrl/main/LICENSE
 
