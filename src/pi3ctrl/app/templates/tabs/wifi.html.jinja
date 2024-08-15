@@ -1,0 +1,128 @@
+<h1 class="h2 pt-3 pb-2 mb-3 border-bottom">Wi-Fi</h1>
+<div class="row">
+
+  <p class="pt-4 lead">
+    The RPi features <code>autohotspot</code> functionality such that it can always be reached via Wi-Fi. 
+    Knowing the IPv4 address is obsolete.  
+    Simply connect to the RPi by the hostname <code>http://{{hostname|lower}}.local</code>, for example. 
+    The RPi attempts to connect to configured wireless networks in range and self-hosts a network if none are available.<br>
+    Network scanning is executed on boot, after adding a network and by clicking the button:
+  </p>
+  <p class="text-center text-md-start mb-md-0">
+    <button class="btn btn-outline-light" onclick="autohotspot();" type="">Scan for networks</button>
+  </p>
+
+  <hr class="my-4 my-md-5">
+
+  <h3 class="mb-3 hstack gap-3">Hotspot mode <div class="vr"></div> <small class="text-muted">self-host a wireless network</small></h3>
+
+  <p>The following wireless network is created when no configured network is in range.</p>
+
+  <div class="row mb-2 md-md-3">
+    <div class="col-md-3 text-md-end">
+      <label for="staticNetworkName" class="col-form-label">Name/SSID</label>
+    </div>
+    <div class="col-md-9">
+      <input type="text" class="form-control" id="staticNetworkName" value="{{hostapd.ssid}}" readonly>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-3 text-md-end">
+      <label for="staticPassword" class="col-form-label">WPA{{hostapd.wpa}} passphrase</label>
+    </div>
+    <div class="col-md-9">
+      <input type="text" class="form-control" id="staticPassword" value="{{hostapd.wpa_passphrase}}" readonly>
+    </div>
+  </div>
+
+  <p><b>Note:</b> this network shall not have internet access!</p>
+
+  <hr class="my-4 my-md-5">
+
+  <h3 class="mb-3 hstack gap-3">Client mode <div class="vr"></div> <small class="text-muted">join a known wireless network</small></h3>
+
+  <h6><span id="ssid-connected" class="badge bg-success"></span></h6>
+
+  <p>Enter the <code>name</code> and <code>passphrase</code> to add a wireless network. 
+     The passphrase will be encrypted.<br> 
+     Only visible and WPA2 (WPA Personal) secured networks are supported.
+  </p>
+
+  <form class="needs-validation pb-4" id="wifi-add" novalidate>
+
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end">
+        <label for="inputSSID" class="col-form-label">Name/SSID</label>
+      </div>
+      <div class="col-md-9">
+        <input type="text" id="inputSSID" class="form-control" spellcheck="false"
+         autocorrect="off" autocapitalize="off" required>
+        <div class="invalid-feedback">
+          Please enter a valid network name.
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-3 text-md-end">
+        <label for="inputPSK" class="col-form-label">WPA2 passphrase</label>
+      </div>
+      <div class="col-md-9">
+        <div class="input-group toggle-password">
+          <input type="password" id="inputPSK" class="form-control" spellcheck="false"
+           autocorrect="off" autocapitalize="off" minlength="8" maxlength="63" required>
+          <button type="button" class="d-none btn btn-outline-secondary"
+           aria-label="Show password as plain text. Warning: this will display your password on the screen."
+           style="border-top-right-radius:0.25rem;border-bottom-right-radius:0.25rem;">
+          </button>
+          <span class="invalid-feedback">
+            Please enter a WPA2 security key of length 8 to 63 characters.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4 justify-content-end">
+      <div class="col-md-9">
+        <button class="btn btn-outline-primary" type="reset">Cancel</button>
+        <button class="btn btn-primary" type="submit" value="submit">Add network</button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<div class="modal fade" id="wifi-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Wi-Fi secret</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form class="needs-validation" id="wifi-secret" novalidate>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="message-text" class="col-form-label">Enter the secret to proceed:</label>
+            <div class="input-group toggle-password">
+              <input type="password" id="inputSECRET" class="form-control" spellcheck="false"
+               autocorrect="off" autocapitalize="off" minlength="6" required>
+              <button type="button" class="d-none btn btn-outline-secondary"
+               aria-label="Show secret as plain text. Warning: this will display the secret on the screen."
+               style="border-top-right-radius:0.25rem;border-bottom-right-radius:0.25rem;">
+              </button>
+              <span class="invalid-feedback">
+                Please enter the secret.
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" form="wifi-secret">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

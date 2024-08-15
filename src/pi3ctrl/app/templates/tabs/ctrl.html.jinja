@@ -1,0 +1,117 @@
+<h1 class="h2 pt-3 pb-2 mb-3 border-bottom">Ctrl</h1>
+<div class="row">
+
+  <form class="pb-4" id="ctrl-form" novalidate>
+
+    <h3 class="mb-3 hstack gap-3">Audio <div class="vr"></div> <small class="text-muted">Clip 1</small></h3>
+
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end"></div>
+      <div class="col-md-9">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="audioClip1Check">
+          <label class="form-check-label" for="audioClip1Check">Enable</label>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end"></div>
+      <div class="col-md-9">
+        <input type="file" class="form-control" id="audioClip1File" />
+        <div class="invalid-feedback">
+          Please enter a valid file.
+        </div>
+      </div>
+    </div>
+
+    <hr class="mt-4 mb-3 mt-md-5 mb-md-4">
+
+    <h3 class="mb-3 hstack gap-3">Audio <div class="vr"></div> <small class="text-muted">Clip 2</small></h3>
+
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end"></div>
+      <div class="col-md-9">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="audioClip2Check">
+          <label class="form-check-label" for="audioClip2Check">Enable</label>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end"></div>
+      <div class="col-md-9">
+        <input type="file" class="form-control" id="audioClip2File" />
+        <div class="invalid-feedback">
+          Please enter a valid file.
+        </div>
+      </div>
+    </div>
+
+    <hr class="mt-4 mb-3 mt-md-5 mb-md-4">
+
+    <h3 class="mb-3 hstack gap-3">Audio <div class="vr"></div> <small class="text-muted">Clip 3</small></h3>
+
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end"></div>
+      <div class="col-md-9">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="audioClip3Check">
+          <label class="form-check-label" for="audioClip3Check">Enable</label>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-2 mb-md-3">
+      <div class="col-md-3 text-md-end"></div>
+      <div class="col-md-9">
+        <input type="file" class="form-control" id="audioClip3File" />
+        <div class="invalid-feedback">
+          Please enter a valid file.
+        </div>
+      </div>
+    </div>
+
+    <hr class="mt-4 mb-3 mt-md-5 mb-md-4">
+
+    <div class="row mt-5 mb-4 justify-content-end">
+      <div class="col-md-9">
+        <button class="btn btn-outline-primary" type="reset">Cancel</button>
+        <button class="btn btn-primary" type="submit" value="submit">Submit</button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<div class="modal fade" id="wifi-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Wi-Fi secret</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form class="needs-validation" id="wifi-secret" novalidate>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="message-text" class="col-form-label">Enter the secret to proceed:</label>
+            <div class="input-group toggle-password">
+              <input type="password" id="inputSECRET" class="form-control" spellcheck="false"
+               autocorrect="off" autocapitalize="off" minlength="6" required>
+              <button type="button" class="d-none btn btn-outline-secondary"
+               aria-label="Show secret as plain text. Warning: this will display the secret on the screen."
+               style="border-top-right-radius:0.25rem;border-bottom-right-radius:0.25rem;">
+              </button>
+              <span class="invalid-feedback">
+                Please enter the secret.
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" form="wifi-secret">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

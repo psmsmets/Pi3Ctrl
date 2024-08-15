@@ -1,0 +1,16 @@
+[Unit]
+Description=Automatically generates a Wi-Fi hotspot when no known SSID is in range
+After=multi-user.target
+
+[Service]
+Type=oneshot
+User=tud
+Group=tud
+ExecStart=
+ExecStart=/usr/bin/sudo /home/tud/.py37/bin/autohotspot
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=multi-ear-wifi
+
+[Install]
+WantedBy=multi-user.target
