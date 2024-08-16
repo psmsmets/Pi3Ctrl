@@ -3,8 +3,9 @@ import hashlib
 import os
 import shutil
 import socket
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, flash, jsonify, request, render_template, send_from_directory, url_for
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 
 # Relative imports
 from . import utils
@@ -160,5 +161,31 @@ def create_app(test_config=None) -> Flask:
             "total": usage.total,
             "used": usage.used,
             "free": usage.free}), 200
+
+    def allowed_file(filename, file):
+        exts = app.config[f"{FILE}_ALLOWED_EXTENSIONS"]
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in exts 
+
+    @app.route('/_soundfile', methods=['POST'])
+    def upload_soundfile():
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename, 'SOUNDFILE'):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['SOUNDFILE_FOLDER'], filename))
+            return redirect(url_for('_soundfile', name=filename))
+
+    @app.route('/_soundfile/<name>')
+    def download_soundfile(name):
+        return send_from_directory(app.config["SOUNDFILE_FOLDER"], name)
 
     return app
