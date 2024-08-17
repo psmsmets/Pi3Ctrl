@@ -25,3 +25,9 @@ class Config(object):
     MAX_CONTENT_LENGTH = 128 * 1000 * 1000  # 128MB
 
     SYSTEMD_STATUS = ['nginx.service', 'dnsmasq.service', 'hostapd.service']
+
+    def to_dict(self):
+        return {k: v for k, v in self.__class__.__dict__.items() if not callable(v) and not k.startswith('__')}
+
+    def items(self):
+        return self.to_dict()
