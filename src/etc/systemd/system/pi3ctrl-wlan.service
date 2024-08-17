@@ -7,10 +7,10 @@ Type=oneshot
 User=tud
 Group=tud
 ExecStart=
-ExecStart=/usr/bin/sudo /home/tud/.py37/bin/autohotspot
+ExecStart=/usr/bin/sudo /home/tud/.local/bin/autohotspot
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=multi-ear-wifi
+SyslogIdentifier=pi3ctrl-wlan
 
 [Install]
 WantedBy=multi-user.target

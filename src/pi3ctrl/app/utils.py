@@ -1,11 +1,16 @@
 # absolute imports
 from flask import current_app as app
 from subprocess import Popen, PIPE
+import os
+import sys
+
+
+__all__ = []
 
 
 core_services = ['pi3ctrl-core.service',
                  'pi3ctrl-http.service',
-                 'pi3ctrl-wifi.service']
+                 'pi3ctrl-wlan.service']
 
 
 def systemd_status(service: str):
@@ -34,16 +39,14 @@ def systemd_status_all():
 def wlan_ssid_passphrase(ssid: str, passphrase: str):
     """Add Wi-Fi ssid and passphrase to wpa_supplicant and connect.
     """
-    # Should be dynamic!!
-    return _popen(['/home/tud/.py37/bin/append_wpa_supplicant',
-                   ssid, passphrase])
+    cmd = os.path.join(os.path.dirname(sys.executable), 'append_wpa_supplicant')
+    return _popen([cmd, ssid, passphrase])
 
 
 def wlan_autohotspot():
     """Run autohotspot.
     """
-    return _popen(['/usr/bin/sudo', '/usr/bin/systemctl',
-                   'start', 'pi3ctrl-wifi'])
+    return _popen(['/usr/bin/sudo', '/usr/bin/systemctl', 'start', 'pi3ctrl-wifi'])
 
 
 def _popen(*args, **kwargs):

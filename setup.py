@@ -8,7 +8,7 @@ import atexit
 def _post_install():
     """Post-installation."""
     print('POST INSTALL')
-    # check_call("apt-get install this-package".split())
+    check_call("ls $HOME".split())
 
 
 class new_install(install):
