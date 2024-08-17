@@ -1,10 +1,11 @@
 # Absolute imports
-# from gpiozero import Button, LED
-import subprocess
-import signal
-import sys
-from time import sleep
+from gpiozero import Button, LED
 from threading import Thread
+from time import sleep
+import os
+import signal
+import subprocess
+import sys
 
 # Relative imports
 from .config import Config
@@ -78,6 +79,7 @@ def execute_command(button_index):
         set_leds_standby()
 
     return wrapper
+
 
 # Function to handle clean exit
 def exit_handler(signal, frame):
