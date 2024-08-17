@@ -12,7 +12,7 @@ from . import utils
 from ..util import is_raspberry_pi, parse_config
 version_not_found = "[VERSION-NOT-FOUND]"
 try:
-    from .version import version
+    from ..version import version
 except (ModuleNotFoundError, AssertionError):
     version = version_not_found
 
