@@ -51,7 +51,7 @@ def create_app(test_config=None) -> Flask:
 
     # set hostname and referers
     hostname = socket.gethostname()
-    referers = ("http://127.0.0.1", f"http://{hostname.lower()}")
+    referers = ("http://127.0.0.1", f"http://{hostname.lower()}", f"http://{utils.get_ipv4_address()}")
 
     # hostapd config
     etc = os.path.join(os.path.dirname(os.path.abspath(__file__)),
