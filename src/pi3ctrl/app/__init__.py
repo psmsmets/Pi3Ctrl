@@ -31,7 +31,7 @@ def create_app(test_config=None) -> Flask:
         app.config.from_object('pi3ctrl.config.Config')
         try:
             app.config.from_envvar('PI3CTRL_CONFIG')
-        except FileNotFoundError as e:
+        except (FileNotFoundError, RuntimeError) as e:
             print(e)
     else:
         # load the test config if passed in
