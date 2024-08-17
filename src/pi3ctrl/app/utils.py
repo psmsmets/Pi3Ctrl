@@ -30,7 +30,7 @@ def systemd_status_all():
     """Get the systemd status of all services.
     """
     status = dict()
-    services = core_services + app.config['SERVICES']
+    services = core_services + app.config['SYSTEMD_STATUS']
     for s in services:
         status[s] = systemd_status(s)
     return status
