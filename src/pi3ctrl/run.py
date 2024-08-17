@@ -10,17 +10,15 @@ from threading import Thread
 from .config import Config
 from .util import parse_config
 
+
 # Load config
-#config = parse_config(os.path.expandvars('$PI3CTRL_CONFIG'), defaults=Config())
-
-#print(config)
-
-raise SystemExit()
+config = os.path.expandvars('$PI3CTRL_CONFIG')
+if os.path.isfile(config):
+    config = parse_config(os.path.expandvars('$PI3CTRL_CONFIG'), defaults=Config())
 
 # Define the GPIO pin numbers (BCM mode)
 BUTTON_PINS = [17, 27, 22]  # Change these to the pins you are using
 LED_PINS = [18, 23, 24]     # Change these to the LED pins you are using
-
 
 # Define the system commands to execute for each button
 COMMANDS = [
