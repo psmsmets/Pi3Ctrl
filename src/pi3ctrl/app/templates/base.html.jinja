@@ -32,10 +32,10 @@
   {% endblock %}
 </head>
 <body class="bg-theme">
-  <nav class="navbar navbar-expand-md flex-column navbar-dark bg-dark p-md-0 border-end">
+  <nav class="navbar navbar-expand-md flex-column navbar-dark bg-black p-md-0 border-start border-end">
     <div class="container-fluid">
-      <a class="navbar-brand d-md-none" href="#" onclick="return false;">{{hostname}}</a>
-      <a class="navbar-brand d-none d-md-block" href="#" onclick="return false;">{{hostname|replace('-','<br>')}}</a>
+      <a class="navbar-brand d-md-none" href="#" onclick="return false;">Pi3Ctrl :: {{hostname}}</a>
+      <a class="navbar-brand d-none d-md-block text-break" href="#" onclick="return false;"><small>{{hostname|replace('-','<br>')}}</small></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar"
        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
