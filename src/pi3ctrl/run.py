@@ -13,8 +13,7 @@ from .util import parse_config
 
 # Load config
 config = os.path.expandvars('$PI3CTRL_CONFIG')
-if os.path.isfile(config):
-    config = parse_config(os.path.expandvars('$PI3CTRL_CONFIG'), defaults=Config())
+config = parse_config(config if os.path.isfile(config) else None, defaults=Config())
 
 # Define the GPIO pin numbers (BCM mode)
 BUTTON_PINS = [17, 27, 22]  # Change these to the pins you are using
