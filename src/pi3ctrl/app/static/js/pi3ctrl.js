@@ -79,9 +79,9 @@ function validateWifiForm() {
 }
 
 
-function wifiSecret() {
+function verifySecret() {
 
-    var modal = new bootstrap.Modal(document.getElementById('wifi-modal'), {
+    var modal = new bootstrap.Modal(document.getElementById('secret-modal'), {
         backdrop: 'static',
         keyboard: false,
         focus: true,
@@ -127,7 +127,7 @@ function wifiSecret() {
 
 function append_wpa_supplicant(form) {
 
-    wifiSecret()
+    verifySecret()
         .then(secret => {
 
             if (secret === null) return
@@ -158,7 +158,7 @@ function append_wpa_supplicant(form) {
 
 function autohotspot() {
 
-    wifiSecret()
+    verifySecret()
         .then(secret => {
 
             if (secret === null) return

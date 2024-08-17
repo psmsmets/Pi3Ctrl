@@ -6,9 +6,10 @@ class Config(object):
     """
     DEBUG = True
     DEVELOPMENT = True
+
     SECRET_KEY = 'do-i-really-need-this'
     FLASK_HTPASSWD_PATH = '/secret/.htpasswd'
-    FLASK_SECRET = SECRET_KEY
+    FLASK_SECRET = 'some-very-long-ascii-string-you-can-not-remember!'
 
     BUTTON_PINS = [17, 27, 22]
 

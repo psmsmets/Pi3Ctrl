@@ -94,35 +94,4 @@
 
 </div>
 
-<div class="modal fade" id="wifi-modal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Wi-Fi secret</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form class="needs-validation" id="wifi-secret" novalidate>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="message-text" class="col-form-label">Enter the secret to proceed:</label>
-            <div class="input-group toggle-password">
-              <input type="password" id="inputSECRET" class="form-control" spellcheck="false"
-               autocorrect="off" autocapitalize="off" minlength="6" required>
-              <button type="button" class="d-none btn btn-outline-secondary"
-               aria-label="Show secret as plain text. Warning: this will display the secret on the screen."
-               style="border-top-right-radius:0.25rem;border-bottom-right-radius:0.25rem;">
-              </button>
-              <span class="invalid-feedback">
-                Please enter the secret.
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary" form="wifi-secret">Submit</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+{% include 'secret-modal.html.jinja' %}
