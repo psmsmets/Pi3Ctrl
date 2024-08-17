@@ -1,13 +1,11 @@
 # absolute imports
+from flask import current_app as app
 from subprocess import Popen, PIPE
 
 
-services = ['pi3ctrl-core.service',
-            'pi3ctrl-http.service',
-            'pi3ctrl-wifi.service',
-            'nginx.service',
-            'dnsmasq.service',
-            'hostapd.service']
+core_services = ['pi3ctrl-core.service',
+                 'pi3ctrl-http.service',
+                 'pi3ctrl-wifi.service']
 
 
 def systemd_status(service: str):
@@ -27,6 +25,7 @@ def systemd_status_all():
     """Get the systemd status of all services.
     """
     status = dict()
+    services = core_services + app.config['SERVICES']
     for s in services:
         status[s] = systemd_status(s)
     return status

@@ -22,3 +22,5 @@ class Config(object):
     SOUNDFILE_PLAYER = '/usr/bin/aplay'
 
     MAX_CONTENT_LENGTH = 128 * 1000 * 1000  # 128MB
+
+    SYSTEMD_STATUS = ['nginx.service', 'dnsmasq.service', 'hostapd.service']
