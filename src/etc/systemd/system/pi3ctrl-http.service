@@ -1,22 +1,23 @@
 [Unit]
-Description=Multi-EAR control, monitoring, documentation and data visualization via a web browser
-After=multi-user.target
+Description=Pi3Ctrl http agent
+Wants=network-online.target
+After=network.target network-online.target
  
 [Service]
 Type=simple
-User=tud
-Group=tud
-WorkingDirectory=/home/tud/
-Environment="VIRTUAL_ENV=/home/tud/.py37"
+#User=root
+#Group=root
+WorkingDirectory=/opt/smh/
+Environment="VIRTUAL_ENV=/opt/smh/py3"
 Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
-EnvironmentFile=/home/tud/.multi_ear.env
+#EnvironmentFile=/opt/smh/.pi3ctrl.env
 ExecStart=
-ExecStart=/usr/bin/sudo /usr/bin/nice -n -10 /home/tud/.py37/bin/uwsgi \
-  --ini /home/tud/.py37/multi-ear-services/uwsgi.ini
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=multi-ear-ctrl
+ExecStart=/usr/bin/sudo /usr/bin/nice -n -10 $VIRTUAL_ENV/bin/uwsgi --ini $VIRTUAL_ENV/share/pi3ctrl/uwsgi.ini
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi3ctrl-http
 Restart=always
+RestartSec=30
  
 [Install]
 WantedBy=multi-user.target

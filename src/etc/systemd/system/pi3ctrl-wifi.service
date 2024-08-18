@@ -1,16 +1,20 @@
 [Unit]
-Description=Automatically generates a Wi-Fi hotspot when no known SSID is in range
+Description=Pi3Ctrl wifi autohotspot agent
 After=multi-user.target
 
 [Service]
-Type=oneshot
-User=tud
-Group=tud
+Type=simple
+#User=root
+#Group=root
+WorkingDirectory=/opt/smh/
+Environment="VIRTUAL_ENV=/opt/smh/py3"
+Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
+#EnvironmentFile=/opt/smh/.pi3ctrl.env
 ExecStart=
-ExecStart=/usr/bin/sudo /home/tud/.local/bin/autohotspot
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=pi3ctrl-wlan
+ExecStart=/usr/bin/sudo $VIRTUAL_ENV/bin/bin/autohotspot
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi3ctrl-wifi
 
 [Install]
 WantedBy=multi-user.target

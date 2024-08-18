@@ -1,24 +1,22 @@
 [Unit]
-Description=Multi-EAR sensorboard serial readout to a local Influx time series database
-After=influxd.service
-# After=multi-user.target
+Description=Pi3Ctrl core agent
+After=multi-user.target
  
 [Service]
 Type=simple
-User=tud
-Group=tud
-WorkingDirectory=/home/tud/
-Environment="VIRTUAL_ENV=/home/tud/.py37"
+#User=root
+#Group=root
+WorkingDirectory=/opt/smh/
+Environment="VIRTUAL_ENV=/opt/smh/py3"
 Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
-EnvironmentFile=/home/tud/.multi_ear.env
+#EnvironmentFile=/opt/smh/.pi3ctrl.env
 ExecStart=
-ExecStart=/usr/bin/nice -n 10 /home/tud/.py37/bin/multi-ear-uart \
-  --ini /home/tud/.py37/multi-ear-services/config.ini \
-  --journald
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=multi-ear-uart
+ExecStart=/usr/bin/nice -n 10 $VIRTUAL_ENV/bin/pi3ctrl-core
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi3ctrl-core
 Restart=always
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
