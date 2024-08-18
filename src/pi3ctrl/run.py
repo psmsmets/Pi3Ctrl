@@ -2,6 +2,7 @@
 from gpiozero import Button, LED
 from threading import Thread
 from time import sleep
+import json
 import os
 import signal
 import subprocess
@@ -16,8 +17,8 @@ from .util import parse_config
 config = parse_config('$PI3CTRL_CONFIG', defaults=Config().to_dict())['DEFAULT']
 
 # Create button and LED objects
-buttons = [Button(pin) for pin in config['BUTTON_PINS']]
-leds = [LED(pin) for pin in config['LED_PINS']]
+buttons = [Button(pin) for pin in json.loads(config['BUTTON_PINS'])]
+leds = [LED(pin) for pin in json.loads(config['LED_PINS'])]
 
 
 # Function to set LEDs to standby mode
