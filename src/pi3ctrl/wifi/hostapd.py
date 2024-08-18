@@ -2,8 +2,10 @@
 import os
 import tempfile
 from configparser import ConfigParser
+from importlib import resources
 
 # Relative imports
+from .. import wifi
 from ..util.parse_config import expand_env, parse_config
 from ..util.is_raspberry_pi import is_RPi
 
@@ -11,7 +13,7 @@ from ..util.is_raspberry_pi import is_RPi
 __all__ = ['read_hostapd_config', 'write_hostapd_config']
 
 
-_hostapd_raw = os.path.join('wifi', 'hostapd.conf')
+_hostapd_raw = resources.files(wifi) / 'hostapd.conf'
 _hostapd_cfg = os.path.join('/etc/hostapd' if is_RPi else tempfile.gettempdir(), 'hostapd.conf')
 
 
@@ -38,8 +40,8 @@ def write_hostapd_config(config, **kwargs) -> None:
     with open(_hostapd_raw, "r") as fo:
         hostapd = fo.read()
 
-    with open(_hostapd_cfg, 'w', opener=opener) as fm:
-        fm.write(
+    with open(_hostapd_cfg, 'w', opener=opener) as fw:
+        fw.write(
             hostapd.format(
                 CHANNEL=config['HOSTAPD_CHANNEL'],
                 SSID=expand_env(config['HOSTAPD_SSID']),
