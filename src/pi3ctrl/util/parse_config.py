@@ -37,6 +37,8 @@ def parse_config(filenames, config=None, defaults=None, logger=None, **kwargs):
 
     # parse files and add DEFAULT section if missing
     for filename in filenames:
+        if not os.path.isfile(filename):
+            continue
         with open(filename, 'r') as f:
             try:
                 config.read_file(f, source=config)
