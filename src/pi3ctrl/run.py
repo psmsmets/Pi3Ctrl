@@ -14,7 +14,7 @@ from .util import parse_config
 
 # Load config
 config = os.path.expandvars('$PI3CTRL_CONFIG')
-config = parse_config(config if os.path.isfile(config) else None, defaults=Config.to_dict())
+config = parse_config(config if os.path.isfile(config) else None, defaults=Config().to_dict())
 
 # Define the system commands to execute for each button
 COMMANDS = [
