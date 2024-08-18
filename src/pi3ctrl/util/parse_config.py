@@ -21,12 +21,11 @@ def parse_config(configfiles, config=None, defaults=None, logger=None, environ=F
     MissingSectionHeaderError to the section '[DEFAULT]'.
     """
 
-    # Init object
-    config = config or ConfigParser(defaults=os.environ if environ else None, **kwargs)
-
-    # Load defaults from dict if given
-    if isinstance(defaults, dict):
-        config['DEFAULT'] = defaults
+    # Init object with defaults
+    if defaults is True:
+        defaults=os.environ
+    
+    config = config or ConfigParser(defaults=defaults, **kwargs)
 
     # Config paths should be list or tuple
     if isinstance(configfiles, str):

@@ -12,8 +12,8 @@ from .config import Config
 from .util import parse_config
 
 
-# Load config
-config = parse_config('$PI3CTRL_CONFIG', defaults=Config().to_dict())
+# Load config as a dictionary
+config = parse_config('$PI3CTRL_CONFIG', defaults=Config().to_dict())['DEFAULT']
 
 # Create button and LED objects
 buttons = [Button(pin) for pin in config['BUTTON_PINS']]
