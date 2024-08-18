@@ -1,5 +1,7 @@
 # Absolute imports
 import os
+import re
+import socket
 from configparser import ConfigParser, MissingSectionHeaderError
 
 
@@ -8,7 +10,11 @@ __all__ = ['expand_env', 'parse_config']
 
 def expand_env(var: str) -> str:
     """Expand environment variable if defined."""
-    return os.environ.get(var, var)
+    # print(os.environ['HOSTNAME'], os.environ)
+    if re.sub(r'[^A-Z]', '', var.upper()) == 'HOSTNAME':
+        return socket.gethostname()
+    else:
+        return os.environ.get(var, var)
 
 
 def parse_config(filenames, config=None, defaults=None, logger=None, **kwargs):
