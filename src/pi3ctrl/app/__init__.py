@@ -9,7 +9,8 @@ from werkzeug.utils import secure_filename
 
 # Relative imports
 from . import utils
-from ..util import is_raspberry_pi, parse_config
+from ..util import is_RPi
+from ..wifi import read_hostapd_config, write_hostapd_config
 version_not_found = "[VERSION-NOT-FOUND]"
 try:
     from ..version import version
@@ -46,17 +47,13 @@ def create_app(test_config=None) -> Flask:
     # set cross-origin resource sharing
     CORS(app, resources=r'/*')
 
-    # check if host is a Raspberry Pi
-    is_rpi = is_raspberry_pi()
-
     # set hostname and referers
     hostname = socket.gethostname()
     referers = ("http://127.0.0.1", f"http://{hostname.lower()}", f"http://{utils.get_ipv4_address()}")
 
     # hostapd config
-    etc = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                       '../../etc') if app.debug else '/etc'
-    hostapd = parse_config(os.path.join(etc, 'hostapd', 'hostapd.conf'))
+    write_hostapd_config(app.config)
+    hostapd = read_hostapd_config()
 
     # wifi secret
     app.config['SECRET_SHA256'] = hashlib.sha256(
@@ -110,7 +107,7 @@ def create_app(test_config=None) -> Flask:
 
     @app.route("/_systemd_status", methods=['GET'])
     def systemd_status():
-        if not is_rpi:
+        if not is_RPi:
             return "I'm not Raspberry Pi", 418
         service = request.args.get('service') or '*'
         if service == '*':
@@ -123,7 +120,7 @@ def create_app(test_config=None) -> Flask:
     def append_wpa_supplicant():
         if not is_internal_referer():
             return "Invalid request", 403
-        if not is_rpi:
+        if not is_RPi:
             return "I'm not Raspberry Pi", 418
         secret = request.args.get('secret')
         if secret != app.config['SECRET_SHA256']:
@@ -139,7 +136,7 @@ def create_app(test_config=None) -> Flask:
     def autohotspot():
         if not is_internal_referer():
             return "Invalid request", 403
-        if not is_rpi:
+        if not is_RPi:
             return "I'm not Raspberry Pi", 418
         secret = request.args.get('secret')
         if secret != app.config['SECRET_SHA256']:
@@ -149,12 +146,18 @@ def create_app(test_config=None) -> Flask:
 
     @app.route("/_ssid", methods=['GET'])
     def ssid_api():
+        if not is_internal_referer():
+            return "Invalid request", 403
+        if not is_RPi:
+            return "I'm not Raspberry Pi", 418
         ssid = os.popen("sudo iwgetid -r").read().rstrip("\n")
         return jsonify({"ssid": ssid}), 200
 
     @app.route("/_storage", methods=['GET'])
     def storage_api():
-        if not is_rpi:
+        if not is_internal_referer():
+            return "Invalid request", 403
+        if not is_RPi:
             return "I'm not Raspberry Pi", 418
         usage = shutil.disk_usage("/")
         return jsonify({

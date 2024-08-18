@@ -97,7 +97,7 @@ def main():
     set_leds_standby()
 
     # Keep the script running to monitor the GPIO pins
-    print(f"Monitoring GPIO pins {BUTTON_PINS} for rising edge events. Press Ctrl+C to exit.")
+    print(f"Monitoring GPIO pins {config['BUTTON_PINS']} for rising edge events. Press Ctrl+C to exit.")
     signal.pause()
 
 

@@ -3,7 +3,12 @@ import os
 from configparser import ConfigParser, MissingSectionHeaderError
 
 
-__all__ = ['parse_config']
+__all__ = ['expand_env', 'parse_config']
+
+
+def expand_env(var: str) -> str:
+    """Expand environment variable if defined."""
+    return os.environ.get(var, var)
 
 
 def parse_config(filenames, config=None, defaults=None, **kwargs):

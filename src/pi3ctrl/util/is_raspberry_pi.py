@@ -2,7 +2,7 @@
 import os
 
 
-__all__ = ['is_raspberry_pi']
+__all__ = ['is_RPi', 'is_raspberry_pi']
 
 
 def is_raspberry_pi():
@@ -13,3 +13,6 @@ def is_raspberry_pi():
     with open('/proc/device-tree/model') as f:
         model = f.read()
     return model.startswith('Raspberry Pi')
+
+
+is_RPi = is_raspberry_pi()

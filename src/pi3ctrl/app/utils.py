@@ -11,7 +11,10 @@ __all__ = []
 
 core_services = ['pi3ctrl-core.service',
                  'pi3ctrl-http.service',
-                 'pi3ctrl-wifi.service']
+                 'pi3ctrl-wifi.service'
+                 'nginx.service',
+                 'dnsmasq.service',
+                 'hostapd.service']
 
 
 def get_ipv4_address():
