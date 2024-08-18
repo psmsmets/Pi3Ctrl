@@ -15,13 +15,6 @@ from .util import parse_config
 # Load config
 config = parse_config(os.path.expandvars('$PI3CTRL_CONFIG'), defaults=Config().to_dict())
 
-# Define the system commands to execute for each button
-COMMANDS = [
-    "echo Button 1 pressed",  # Change these to the commands you want to run
-    f"/usr/bin/aplay {config['SAMPLE_FILE_2']}",
-    "/usr/bin/aplay /opt/pi3ctrl/sampleFile3.wav"
-]
-
 # Create button and LED objects
 buttons = [Button(pin) for pin in config['BUTTON_PINS']]
 leds = [LED(pin) for pin in config['LED_PINS']]
@@ -36,14 +29,23 @@ def set_leds_standby():
 # Function to blink LED
 def blink_led(led):
     while True:
-        led.toggle()
-        sleep(0.5)  # @CONFIG
+        led.on()
+        sleep(config['LED_ON_SECONDS'])
+        led.off()
+        sleep(config['LED_OFF_SECONDS'])
 
 
 # Function to execute the command and control LEDs
 def execute_command(button_index):
     def wrapper():
-        print(f"Button {button_index + 1} pressed, executing command: {COMMANDS[button_index]}")
+        command = "{player} {sf}".format(
+            player=config['SOUNDFILE_PLAYER'],
+            sf=os.path.expandvars(os.path.join(
+                config['SOUNDFILE_FOLDER'],
+                f"soundFile{button_index + 1}.wav"
+            ))
+        )
+        print(f"Button {button_index + 1} pressed, executing command: {command}")
 
         # Turn off all LEDs and blink the pressed button's LED
         for i, led in enumerate(leds):
@@ -55,7 +57,7 @@ def execute_command(button_index):
                 led.off()
 
         # Run the command
-        result = subprocess.run(COMMANDS[button_index], shell=True, capture_output=True, text=True)
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
         print(f"Command output:\n{result.stdout}")
 
         # Disable all buttons
@@ -64,7 +66,7 @@ def execute_command(button_index):
                 button.when_pressed = None
 
         # Re-enable all buttons and set LEDs to standby mode after a delay
-        sleep(5)  # Adjust the delay as needed @CONFIG
+        sleep(config['BUTTON_OFF_SECONDS'])
         for i, button in enumerate(buttons):
             if i != button_index:
                 button.when_pressed = execute_command(i)

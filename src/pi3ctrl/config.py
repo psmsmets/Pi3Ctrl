@@ -21,6 +21,7 @@ class Config(object):
 
     # Pi3Ctrl
     BUTTON_PINS = [17, 27, 22]
+    BUTTON_OFF_SECONDS = 5
 
     LED = True
     LED_ON_SECONDS = .5
