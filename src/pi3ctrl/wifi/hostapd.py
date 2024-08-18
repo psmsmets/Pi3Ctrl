@@ -13,8 +13,10 @@ from ..util.is_raspberry_pi import is_RPi
 __all__ = ['read_hostapd_config', 'write_hostapd_config']
 
 
+_hostapd_etc = '/etc/hostapd/hostapd.conf'
+_hostapd_tmp = os.path.join(tempfile.gettempdir(), 'hostapd.conf')
 _hostapd_raw = resources.files(wifi) / 'hostapd.conf'
-_hostapd_cfg = os.path.join('/etc/hostapd' if is_RPi else tempfile.gettempdir(), 'hostapd.conf')
+_hostapd_cfg = _hostapd_etc if is_RPi and os.path.isfile(_hostapd_etc) else _hostapd_tmp
 
 
 def read_hostapd_config(**kwargs) -> ConfigParser:
