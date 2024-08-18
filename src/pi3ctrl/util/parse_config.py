@@ -10,16 +10,15 @@ __all__ = ['expand_env', 'parse_config']
 
 def expand_env(var: str) -> str:
     """Expand environment variable if defined."""
-    # print(os.environ['HOSTNAME'], os.environ)
     if re.sub(r'[^A-Z]', '', var.upper()) == 'HOSTNAME':
         return socket.gethostname()
     else:
         return os.environ.get(var, var)
 
 
-def parse_config(filenames, config=None, defaults=None, logger=None, environ=False, **kwargs):
+def parse_config(configfiles, config=None, defaults=None, logger=None, environ=False, **kwargs):
     """Parse a single config file using ConfigParser.read() while catching the
-    MissingSectionHeaderError to the section '[default]'.
+    MissingSectionHeaderError to the section '[DEFAULT]'.
     """
 
     # Init object
@@ -30,20 +29,20 @@ def parse_config(filenames, config=None, defaults=None, logger=None, environ=Fal
         config['DEFAULT'] = defaults
 
     # Config paths should be list or tuple
-    if isinstance(filenames, str):
-        filenames = [filenames]
-    elif not isinstance(filenames, (list, tuple)):
-        raise TypeError('filenames should be a str or a list/tuple of str')
+    if isinstance(configfiles, str):
+        configfiles = [configfiles]
+    elif not isinstance(configfiles, (list, tuple)):
+        raise TypeError('configfiles should be a str or a list/tuple of str')
 
     # Parse files and add DEFAULT section if missing
-    for filename in filenames:
+    for configfile in configfiles:
 
-        filename = os.path.expandvars(filename)
+        configfile = os.path.expandvars(configfile)
 
-        if not os.path.isfile(filename):
+        if not os.path.isfile(configfile):
             continue
 
-        with open(filename, 'r') as f:
+        with open(configfile, 'r') as f:
             try:
                 config.read_file(f, source=config)
             except MissingSectionHeaderError:
