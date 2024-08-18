@@ -14,10 +14,6 @@ def parse_config(filenames, config=None, defaults=None, **kwargs):
     # subsitute clean environment
     if defaults is True:
         defaults = os.environ
-    if defaults:
-        for key, val in defaults.items():
-            if '%' in val:
-                defaults.pop(key)
 
     # init
     config = config or ConfigParser(defaults=defaults, **kwargs)

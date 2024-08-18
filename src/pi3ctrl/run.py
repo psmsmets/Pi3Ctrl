@@ -14,11 +14,7 @@ from .util import parse_config
 
 # Load config
 config = os.path.expandvars('$PI3CTRL_CONFIG')
-config = parse_config(config if os.path.isfile(config) else None, defaults=Config())
-
-# Define the GPIO pin numbers (BCM mode)
-BUTTON_PINS = [17, 27, 22]  # Change these to the pins you are using
-LED_PINS = [18, 23, 24]     # Change these to the LED pins you are using
+config = parse_config(config if os.path.isfile(config) else None, defaults=Config.to_dict())
 
 # Define the system commands to execute for each button
 COMMANDS = [
@@ -28,8 +24,8 @@ COMMANDS = [
 ]
 
 # Create button and LED objects
-buttons = [Button(pin) for pin in BUTTON_PINS]
-leds = [LED(pin) for pin in LED_PINS]
+buttons = [Button(pin) for pin in config['BUTTON_PINS']]
+leds = [LED(pin) for pin in config['LED_PINS']]
 
 
 # Function to set LEDs to standby mode

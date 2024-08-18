@@ -11,7 +11,7 @@ __all__ = []
 
 core_services = ['pi3ctrl-core.service',
                  'pi3ctrl-http.service',
-                 'pi3ctrl-wlan.service']
+                 'pi3ctrl-wifi.service']
 
 
 def get_ipv4_address():
@@ -50,14 +50,14 @@ def systemd_status_all():
     return status
 
 
-def wlan_ssid_passphrase(ssid: str, passphrase: str):
+def wifi_ssid_passphrase(ssid: str, passphrase: str):
     """Add Wi-Fi ssid and passphrase to wpa_supplicant and connect.
     """
     cmd = os.path.join(os.path.dirname(sys.executable), 'append_wpa_supplicant')
     return _popen([cmd, ssid, passphrase])
 
 
-def wlan_autohotspot():
+def wifi_autohotspot():
     """Run autohotspot.
     """
     return _popen(['/usr/bin/sudo', '/usr/bin/systemctl', 'start', 'pi3ctrl-wifi'])

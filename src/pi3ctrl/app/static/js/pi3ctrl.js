@@ -367,7 +367,7 @@ function loadContent(nav) {
 
             switch (tab) {
 
-                case "wlan":
+                case "wifi":
 		    loadConnectedSSID()
                     showPasswordToggle()
                     validateWifiForm()

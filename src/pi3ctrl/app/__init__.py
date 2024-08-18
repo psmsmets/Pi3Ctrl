@@ -132,7 +132,7 @@ def create_app(test_config=None) -> Flask:
         passphrase = request.args.get('passphrase')
         if not (ssid and passphrase):
             return "Invalid ssid and/or passphrase arguments", 400
-        resp = utils.wlan_ssid_passphrase(ssid, passphrase)
+        resp = utils.wifi_ssid_passphrase(ssid, passphrase)
         return jsonify(resp), 200
 
     @app.route("/_autohotspot", methods=['POST'])
@@ -144,7 +144,7 @@ def create_app(test_config=None) -> Flask:
         secret = request.args.get('secret')
         if secret != app.config['SECRET_SHA256']:
             return "Secret invalid", 403
-        resp = utils.wlan_autohotspot()
+        resp = utils.wifi_autohotspot()
         return jsonify(resp), 200
 
     @app.route("/_ssid", methods=['GET'])
