@@ -6,13 +6,11 @@ import sys
 __all__ = ['init_logger']
 
 
-def init_logger(
-    prog=None, debug=False
-):
+def init_logger(prog=None, debug=False):
     """Create the logger object
     """
     # create logger
-    logger = logging.getLogger(prog or 'audio-player')
+    logger = logging.getLogger(prog or 'pi3ctrl')
 
     # log to stdout
     streamHandler = logging.StreamHandler(sys.stdout)

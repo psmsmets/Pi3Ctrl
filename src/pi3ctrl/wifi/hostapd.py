@@ -8,6 +8,7 @@ from importlib import resources
 from .. import wifi
 from ..util.parse_config import expand_env, parse_config
 from ..util.is_raspberry_pi import is_RPi
+from ..util.system_call import system_call
 
 
 __all__ = ['read_hostapd_config', 'write_hostapd_config']
@@ -42,7 +43,7 @@ def write_hostapd_config(config, **kwargs) -> None:
     with open(_hostapd_raw, "r") as fo:
         hostapd = fo.read()
 
-    with open(_hostapd_cfg, 'w', opener=opener) as fw:
+    with open(_hostapd_tmp, 'w', opener=opener) as fw:
         fw.write(
             hostapd.format(
                 CHANNEL=config['HOSTAPD_CHANNEL'],
@@ -52,4 +53,6 @@ def write_hostapd_config(config, **kwargs) -> None:
             )
         )
 
-    return None
+    cmd = ['/usr/bin/sudo', '/usr/bin/cp', _hostapd_tmp, _hostapd_cfg]
+
+    return system_call(cmd, **kwargs) if is_RPi else True

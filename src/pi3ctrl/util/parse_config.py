@@ -11,7 +11,7 @@ def expand_env(var: str) -> str:
     return os.environ.get(var, var)
 
 
-def parse_config(filenames, config=None, defaults=None, **kwargs):
+def parse_config(filenames, config=None, defaults=None, logger=None, **kwargs):
     """Parse a single config file using ConfigParser.read() while catching the
     MissingSectionHeaderError to the section '[default]'.
     """

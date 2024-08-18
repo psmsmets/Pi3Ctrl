@@ -52,8 +52,8 @@ def create_app(test_config=None) -> Flask:
     referers = ("http://127.0.0.1", f"http://{hostname.lower()}", f"http://{utils.get_ipv4_address()}")
 
     # hostapd config
-    write_hostapd_config(app.config)
-    hostapd = read_hostapd_config()
+    write_hostapd_config(app.config, logger=app.logger)
+    hostapd = read_hostapd_config(logger=app.logger)
 
     # wifi secret
     app.config['SECRET_SHA256'] = hashlib.sha256(

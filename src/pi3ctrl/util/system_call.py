@@ -10,26 +10,23 @@ from ..util.logger import init_logger
 __all__ = ['system_call']
 
 
-def system_call(
-    command: list, log: logging.Logger = None,
-    **kwargs
-):
+def system_call(command: list, logger: logging.Logger = None, **kwargs):
     """Execute a system call. Returns `True` on success.
     """
     if not isinstance(command, list):
         raise TypeError("command should be a list!")
 
-    log = log if isinstance(log, logging.Logger) else init_logger(debug=True)
-    log.debug(' '.join(command))
+    logger = logger if isinstance(logger, logging.Logger) else init_logger(debug=True)
+    logger.debug(' '.join(command))
 
     p = Popen(command, stdout=PIPE, stderr=PIPE, **kwargs)
 
     output, error = p.communicate()
 
     if output:
-        log.debug(output.decode("utf-8"))
+        logger.debug(output.decode("utf-8"))
 
     if p.returncode != 0:
-        log.error(error.decode("utf-8"))
+        logger.error(error.decode("utf-8"))
 
     return p.returncode == 0
