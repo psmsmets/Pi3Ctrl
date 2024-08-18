@@ -13,7 +13,7 @@ from .util import parse_config
 
 
 # Load config
-config = parse_config(os.path.expandvars('$PI3CTRL_CONFIG'), defaults=Config().to_dict())
+config = parse_config('$PI3CTRL_CONFIG', defaults=Config().to_dict())
 
 # Create button and LED objects
 buttons = [Button(pin) for pin in config['BUTTON_PINS']]

@@ -17,17 +17,17 @@ def expand_env(var: str) -> str:
         return os.environ.get(var, var)
 
 
-def parse_config(filenames, config=None, defaults=None, logger=None, **kwargs):
+def parse_config(filenames, config=None, defaults=None, logger=None, environ=False, **kwargs):
     """Parse a single config file using ConfigParser.read() while catching the
     MissingSectionHeaderError to the section '[default]'.
     """
 
-    # subsitute clean environment
-    if defaults is True:
-        defaults = os.environ
+    # Init object
+    config = config or ConfigParser(defaults=os.environ if environ else None, **kwargs)
 
-    # init
-    config = config or ConfigParser(defaults=defaults, **kwargs)
+    # Load defaults from dict if given
+    if isinstance(defaults, dict):
+        config['DEFAULT'] = defaults
 
     # Config paths should be list or tuple
     if isinstance(filenames, str):
@@ -35,10 +35,14 @@ def parse_config(filenames, config=None, defaults=None, logger=None, **kwargs):
     elif not isinstance(filenames, (list, tuple)):
         raise TypeError('filenames should be a str or a list/tuple of str')
 
-    # parse files and add DEFAULT section if missing
+    # Parse files and add DEFAULT section if missing
     for filename in filenames:
+
+        filename = os.path.expandvars(filename)
+
         if not os.path.isfile(filename):
             continue
+
         with open(filename, 'r') as f:
             try:
                 config.read_file(f, source=config)
