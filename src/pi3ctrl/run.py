@@ -42,10 +42,10 @@ def execute_command(button_index):
             player=config['SOUNDFILE_PLAYER'],
             sf=os.path.expandvars(os.path.join(
                 config['SOUNDFILE_FOLDER'],
-                f"soundFile{button_index + 1}.wav"
+                f"soundFile{button_index}.wav"
             ))
         )
-        print(f"Button {button_index + 1} pressed, executing command: {command}")
+        print(f"Button {button_index} pressed, executing command: {command}")
 
         # Turn off all LEDs and blink the pressed button's LED
         for i, led in enumerate(leds):
