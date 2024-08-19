@@ -27,13 +27,11 @@ def create_app(test_config=None) -> Flask:
     app.json.compact = False
     app.json.sort_keys = False
 
+    # load the default config
+    app.config.from_object('pi3ctrl.config.DefaultConfig')
     if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_object('pi3ctrl.config.DefaultConfig')
-        try:
-            app.config.from_envvar('PI3CTRL_CONFIG')
-        except (FileNotFoundError, RuntimeError) as e:
-            print(e)
+        # load the instance config when not testing
+        app.config.from_envvar('PI3CTRL_CONFIG')
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)

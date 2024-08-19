@@ -70,7 +70,8 @@ def write_hostapd_config(config, **kwargs) -> None:
 def update_hostapd_config(config: Config, **kwargs) -> Config:
     """Update, write and load the hostapd configuration."""
 
-    write_hostapd_config(config, **kwargs)
+    if write_hostapd_config(config, **kwargs):
+        pass
     hostapd = read_hostapd_config()
 
     return hostapd
