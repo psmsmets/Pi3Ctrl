@@ -1,12 +1,17 @@
-__all__ = ['Config']
+# Absolute imports
+import os
+from flask import Config
 
 
-class Config(object):
-    """Pi3Ctrl default configuration values.
+__all__ = ['DefaultConfig', 'get_config']
+
+
+class DefaultConfig(object):
+    """Pi3Ctrl default configuration values (all uppercase to be persistent!).
     """
     # Default
     DEBUG = True
-    DEVELOPMENT = True
+    DEVELOPMENT = False
 
     FLASK_HTPASSWD_PATH = '/secret/.htpasswd'
     FLASK_SECRET = 'some-very-long-ascii-string-you-can-not-remember!'
@@ -36,9 +41,17 @@ class Config(object):
 
     SYSTEMD_STATUS = []
 
-    # Extra handlers
-    def to_dict(self):
-        return {k: v for k, v in self.__class__.__dict__.items() if not callable(v) and not k.startswith('__')}
 
-    def items(self):
-        return self.to_dict()
+def get_config():
+    """Get the pi3ctrl configuration as a `flask.Config`"""
+    # init config object
+    config = Config(os.path.dirname(os.path.abspath(__file__)))
+
+    # load default config
+    config.from_object('pi3ctrl.config.DefaultConfig')
+
+    # load config from environ
+    if os.environ.get('PI3CTRL_CONFIG') is not None:
+        config.from_envvar('PI3CTRL_CONFIG', silent=True)
+
+    return config

@@ -23,8 +23,8 @@ def parse_config(configfiles, config=None, defaults=None, logger=None, **kwargs)
 
     # Init object with defaults
     if defaults is True:
-        defaults=os.environ
-    
+        defaults = os.environ
+
     config = config or ConfigParser(defaults=defaults, **kwargs)
 
     # Config paths should be list or tuple

@@ -9,12 +9,11 @@ import subprocess
 import sys
 
 # Relative imports
-from .config import Config
-from .util import parse_config
+from .config import get_config
 
 
 # Load config as a dictionary
-config = parse_config('$PI3CTRL_CONFIG', defaults=Config().to_dict())['DEFAULT']
+config = get_config()
 
 # Create button and LED objects
 buttons = [Button(pin) for pin in json.loads(config['BUTTON_PINS'])]
