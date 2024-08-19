@@ -29,9 +29,11 @@ def create_app(test_config=None) -> Flask:
 
     # load the default config
     app.config.from_object('pi3ctrl.config.DefaultConfig')
+    # update the config
     if test_config is None:
         # load the instance config when not testing
-        app.config.from_envvar('PI3CTRL_CONFIG')
+        if os.environ.get('PI3CTRL_CONFIG') is not None:
+            app.config.from_envvar('PI3CTRL_CONFIG')
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
