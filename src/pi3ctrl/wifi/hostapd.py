@@ -61,10 +61,7 @@ def write_hostapd_config(config, **kwargs) -> None:
             )
         )
 
-    if is_RPi:
-        cmd = ['/usr/bin/sudo', '/usr/bin/cp', _hostapd_tmp, _hostapd_cfg]
-        resp = system_call(cmd, **kwargs)
-        return resp['']
+    cmd = ['/usr/bin/sudo', '/usr/bin/cp', _hostapd_tmp, _hostapd_cfg]
 
     return system_call(cmd, **kwargs) if is_RPi else True
 
