@@ -1,17 +1,18 @@
 # Absolute imports
 import os
+import re
+import socket
 import tempfile
-from configparser import ConfigParser
+from flask import Config
 from importlib import resources
 
 # Relative imports
 from .. import wifi
-from ..util.parse_config import expand_env, parse_config
 from ..util.is_raspberry_pi import is_RPi
 from ..util.system_call import system_call
 
 
-__all__ = ['read_hostapd_config', 'write_hostapd_config']
+__all__ = ['read_hostapd_config', 'write_hostapd_config', 'update_hostapd_config']
 
 
 _hostapd_etc = '/etc/hostapd/hostapd.conf'
@@ -20,19 +21,27 @@ _hostapd_raw = resources.files(wifi) / 'hostapd.conf'
 _hostapd_cfg = _hostapd_etc if is_RPi and os.path.isfile(_hostapd_etc) else _hostapd_tmp
 
 
-def read_hostapd_config(**kwargs) -> ConfigParser:
-    """Parse the hostapd configuration using ConfigParser.
-    """
-    try:
-        hostapd = parse_config(_hostapd_cfg, **kwargs)
-    except FileNotFoundError:
-        hostapd = parse_config(_hostapd_raw, **kwargs)
+def expand_env(var: str) -> str:
+    """Expand environment variable if defined."""
+    if re.sub(r'[^A-Z]', '', var.upper()) == 'HOSTNAME':
+        return socket.gethostname()
+    else:
+        return os.environ.get(var, var)
 
-    return hostapd
+
+def read_hostapd_config(**kwargs) -> Config:
+    """Read the hostapd configuration from the config file."""
+    # init config object
+    config = Config('')
+
+    # read the hostapd config
+    config.from_pyfile(_hostapd_cfg)
+
+    return config
 
 
 def write_hostapd_config(config, **kwargs) -> None:
-    """Parse the hostapd configuration using ConfigParser.
+    """Write the mapped hostapd configuration to a file.
     """
     if is_RPi:
         os.umask(0)
@@ -56,3 +65,12 @@ def write_hostapd_config(config, **kwargs) -> None:
     cmd = ['/usr/bin/sudo', '/usr/bin/cp', _hostapd_tmp, _hostapd_cfg]
 
     return system_call(cmd, **kwargs) if is_RPi else True
+
+
+def update_hostapd_config(config: Config, **kwargs) -> Config:
+    """Update, write and load the hostapd configuration."""
+
+    write_hostapd_config(config, **kwargs)
+    hostapd = read_hostapd_config()
+
+    return hostapd

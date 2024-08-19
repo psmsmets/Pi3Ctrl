@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 # Relative imports
 from . import utils
 from ..util import is_RPi
-from ..wifi import read_hostapd_config, write_hostapd_config
+from ..wifi import update_hostapd_config
 version_not_found = "[VERSION-NOT-FOUND]"
 try:
     from ..version import version
@@ -51,9 +51,8 @@ def create_app(test_config=None) -> Flask:
     hostname = socket.gethostname()
     referers = ("http://127.0.0.1", f"http://{hostname.lower()}", f"http://{utils.get_ipv4_address()}")
 
-    # hostapd config
-    write_hostapd_config(app.config, logger=app.logger)
-    hostapd = read_hostapd_config(logger=app.logger)
+    # update the hostapd config
+    hostapd = update_hostapd_config(app.config, logger=app.logger)
 
     # wifi secret
     app.config['SECRET_SHA256'] = hashlib.sha256(
@@ -65,7 +64,7 @@ def create_app(test_config=None) -> Flask:
         hostname=hostname.replace('.local', ''),
         version=version,
         services=utils.core_services + app.config['SYSTEMD_STATUS'],
-        hostapd=dict(hostapd.items('DEFAULT')),
+        hostapd=hostapd,
     )
 
     # inject template globals
