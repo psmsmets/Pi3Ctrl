@@ -3,13 +3,13 @@ import hashlib
 import os
 import shutil
 import socket
-from flask import Flask, flash, jsonify, redirect, request, render_template, send_from_directory, url_for
+from flask import Flask, flash, g, jsonify, redirect, request, render_template, send_from_directory, url_for
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 
 # Relative imports
-from . import utils
-from ..util import is_RPi
+from .. import utils
+from ..db import query_db
 from ..wifi import update_hostapd_config
 version_not_found = "[VERSION-NOT-FOUND]"
 try:
@@ -27,9 +27,8 @@ def create_app(test_config=None) -> Flask:
     app.json.compact = False
     app.json.sort_keys = False
 
-    # load the default config
     app.config.from_object('pi3ctrl.config.DefaultConfig')
-    # update the config
+
     if test_config is None:
         # load the instance config when not testing
         if os.environ.get('PI3CTRL_CONFIG') is not None:
@@ -43,6 +42,8 @@ def create_app(test_config=None) -> Flask:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    is_RPi = utils.is_RPi
 
     # set cross-origin resource sharing
     CORS(app, resources=r'/*')
@@ -66,6 +67,13 @@ def create_app(test_config=None) -> Flask:
         services=utils.core_services + app.config['SYSTEMD_STATUS'],
         hostapd=hostapd,
     )
+
+    # auto-close database connection
+    @app.teardown_appcontext
+    def close_connection(exception):
+        db = getattr(g, '_database', None)
+        if db is not None:
+            db.close()
 
     # inject template globals
     @app.context_processor

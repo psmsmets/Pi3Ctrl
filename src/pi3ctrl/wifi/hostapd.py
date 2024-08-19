@@ -8,8 +8,7 @@ from importlib import resources
 
 # Relative imports
 from .. import wifi
-from ..util.is_raspberry_pi import is_RPi
-from ..util.system_call import system_call
+from ..utils import is_RPi, system_call
 
 
 __all__ = ['read_hostapd_config', 'write_hostapd_config', 'update_hostapd_config']
@@ -62,7 +61,10 @@ def write_hostapd_config(config, **kwargs) -> None:
             )
         )
 
-    cmd = ['/usr/bin/sudo', '/usr/bin/cp', _hostapd_tmp, _hostapd_cfg]
+    if is_RPi:
+        cmd = ['/usr/bin/sudo', '/usr/bin/cp', _hostapd_tmp, _hostapd_cfg]
+        resp = system_call(cmd, **kwargs)
+        return resp['']
 
     return system_call(cmd, **kwargs) if is_RPi else True
 

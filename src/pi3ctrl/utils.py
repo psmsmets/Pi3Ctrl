@@ -1,12 +1,13 @@
 # absolute imports
 from flask import current_app as app
+from logging import Logger
 from subprocess import Popen, PIPE
 import os
 import socket
 import sys
 
 
-__all__ = []
+__all__ = ['is_RPi']
 
 
 core_services = ['pi3ctrl-core.service',
@@ -15,6 +16,19 @@ core_services = ['pi3ctrl-core.service',
                  'nginx.service',
                  'dnsmasq.service',
                  'hostapd.service']
+
+
+def is_raspberry_pi():
+    """Checks if the device is a Rasperry Pi
+    """
+    if not os.path.exists('/proc/device-tree/model'):
+        return False
+    with open('/proc/device-tree/model') as f:
+        model = f.read()
+    return model.startswith('Raspberry Pi')
+
+
+is_RPi = is_raspberry_pi()
 
 
 def get_ipv4_address():
@@ -33,7 +47,7 @@ def get_ipv4_address():
 def systemd_status(service: str):
     """Get the systemd status of a single service.
     """
-    r = _popen(['/usr/bin/systemctl', 'status', service])
+    r = system_call(['/usr/bin/systemctl', 'status', service], as_dict=True)
     if r['stdout'] and 'Active: ' in r['stdout']:
         status = r['stdout'].split('<br>')[2].split('Active: ')[1]
         if 'since' in status:
@@ -57,21 +71,23 @@ def wifi_ssid_passphrase(ssid: str, passphrase: str):
     """Add Wi-Fi ssid and passphrase to wpa_supplicant and connect.
     """
     cmd = os.path.join(os.path.dirname(sys.executable), 'append_wpa_supplicant')
-    return _popen([cmd, ssid, passphrase])
+    return system_call([cmd, ssid, passphrase], as_dict=True)
 
 
 def wifi_autohotspot():
     """Run autohotspot.
     """
-    return _popen(['/usr/bin/sudo', '/usr/bin/systemctl', 'start', 'pi3ctrl-wifi'])
+    return system_call(['/usr/bin/sudo', '/usr/bin/systemctl', 'start', 'pi3ctrl-wifi'], as_dict=True)
 
 
-def _popen(*args, **kwargs):
-
+def system_call(*args, logger: Logger = None, as_dict: bool = False, **kwargs):
     """Wraps Popen and Popen.communicate() in a catch error statement and
     returns a serialized dictionary object for jsonify.
     """
-    def _resp(**kwargs):
+
+    log = isinstance(logger, Logger)
+
+    def _resp_dict(**kwargs):
         r = {
             'success': False,
             'returncode': None,
@@ -81,26 +97,39 @@ def _popen(*args, **kwargs):
         }
         return r
 
+    logger.debug(' '.join(args[0])) if log else None
+
     try:
         p = Popen(*args, **kwargs, stdout=PIPE, stderr=PIPE)
-    except OSError:
-        return _resp()
+    except OSError as e:
+        logger.error(e) if log else None
+        return _resp_dict('error', e) if as_dict else False
 
     try:
         # wait for process to finish;
         # this also sets the returncode variable inside 'p'
         stdout, stderr = p.communicate()
 
+        success = p.returncode == 0
+
+        if log:
+            if stdout:
+                logger.debug(stdout.decode("utf-8"))
+            if not success:
+                logger.error(stderr.decode("utf-8"))
+
         # construct return dict
-        r = _resp(
-            success=p.returncode == 0,
-            returncode=p.returncode,
-            stdout="<br>".join(stdout.decode("utf-8").split("\n")),
-            stderr="<br>".join(stderr.decode("utf-8").split("\n")),
-        )
-    except OSError as e:
-        r = _resp(returncode=e.errno, stderr=e.strerror)
-    except Exception:
-        r = _resp()
+        if as_dict:
+            r = _resp_dict(
+                success=success,
+                returncode=p.returncode,
+                stdout="<br>".join(stdout.decode("utf-8").split("\n")),
+                stderr="<br>".join(stderr.decode("utf-8").split("\n")),
+            )
+        else:
+            r = success
+    except Exception as e:
+        logger.error(e.strerror) if log else None
+        r = _resp_dict(returncode=e.errno, stderr=e.strerror) if as_dict else False
 
     return r
