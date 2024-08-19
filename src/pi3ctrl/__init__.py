@@ -2,7 +2,7 @@
 """
 Pi3Ctrl
 
-Python 3 based event player for Raspberry Pi with GPIO control.
+Python 3 event player for Raspberry Pi with GPIO control.
 
 :author:
     Pieter Smets (mail@pietersmets.be)

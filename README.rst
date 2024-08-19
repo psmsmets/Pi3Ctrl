@@ -9,7 +9,7 @@ Pi3Ctrl
 .. |made-with-python| image:: https://img.shields.io/badge/Made%20with-Python-1f425f.svg
 .. |Workflow status| image:: https://github.com/psmsmets/pi3ctrl/actions/workflows/tests.yml/badge.svg
 
-Python 3 based event player for Raspberry Pi with GPIO control.
+Python 3 event player for Raspberry Pi with GPIO control.
 
 
 Licensing
