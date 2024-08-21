@@ -18,7 +18,7 @@ core_services = ['pi3ctrl-core.service',
                  'hostapd.service']
 
 
-def is_raspberry_pi():
+def is_raspberry_pi() -> bool:
     """Checks if the device is a Rasperry Pi
     """
     if not os.path.exists('/proc/device-tree/model'):
@@ -31,20 +31,23 @@ def is_raspberry_pi():
 is_RPi = is_raspberry_pi()
 
 
-def get_ipv4_address():
+def get_ipv4_address() -> str:
     """Get the RPi's private IPv4 address"""
-    hostname_ips = socket.gethostbyname_ex(socket.gethostname())[2]
-    ip_list = [ip for ip in hostname_ips if not ip.startswith("127.")]
-    if ip_list:
-        return ip_list[0]
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 53))
-    ip = s.getsockname()[0]
-    s.close()
-    return ip if ip else "127.0.0.1"
+    try:
+        hostname_ips = socket.gethostbyname_ex(socket.gethostname())[2]
+        ip_list = [ip for ip in hostname_ips if not ip.startswith("127.")]
+        if ip_list:
+            return ip_list[0]
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 53))
+        ip = s.getsockname()[0]
+        s.close()
+    except OSError:
+        ip = None
+    return ip or "127.0.0.1"
 
 
-def systemd_status(service: str):
+def systemd_status(service: str) -> dict:
     """Get the systemd status of a single service.
     """
     r = system_call(['/usr/bin/systemctl', 'status', service], as_dict=True)
@@ -57,7 +60,7 @@ def systemd_status(service: str):
     return dict(service=service, status=status, **r)
 
 
-def systemd_status_all():
+def systemd_status_all() -> dict:
     """Get the systemd status of all services.
     """
     status = dict()
@@ -67,14 +70,14 @@ def systemd_status_all():
     return status
 
 
-def wifi_ssid_passphrase(ssid: str, passphrase: str):
+def wifi_ssid_passphrase(ssid: str, passphrase: str) -> dict:
     """Add Wi-Fi ssid and passphrase to wpa_supplicant and connect.
     """
     cmd = os.path.join(os.path.dirname(sys.executable), 'append_wpa_supplicant')
     return system_call([cmd, ssid, passphrase], as_dict=True)
 
 
-def wifi_autohotspot():
+def wifi_autohotspot() -> dict:
     """Run autohotspot.
     """
     return system_call(['/usr/bin/sudo', '/usr/bin/systemctl', 'start', 'pi3ctrl-wifi'], as_dict=True)

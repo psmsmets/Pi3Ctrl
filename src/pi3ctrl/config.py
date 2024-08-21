@@ -9,22 +9,17 @@ __all__ = ['DefaultConfig', 'get_config']
 class DefaultConfig(object):
     """Pi3Ctrl default configuration values (all uppercase to be persistent!).
     """
-    # Default
+    # Flask
     DEBUG = True
     DEVELOPMENT = False
 
+    SECRET_KEY = 'some-very-long-ascii-string-you-should-not-remember!'
     FLASK_HTPASSWD_PATH = '/secret/.htpasswd'
-    FLASK_SECRET = 'some-very-long-ascii-string-you-can-not-remember!'
-
-    SECRET_KEY = 'do-i-really-need-this'
-
-    # Hostapd
-    HOSTAPD_COUNTRY_CODE = 'BE'
-    HOSTAPD_CHANNEL = 6
-    HOSTAPD_SSID = '${HOSTNAME}'
-    HOSTAPD_WPA_PASSPHRASE = 'ChangePassword!'
+    FLASK_SECRET = SECRET_KEY
 
     # Pi3Ctrl
+    CTRL_SECRET = 'PleaseChange!'
+
     BUTTON_PINS = [17, 27, 22]
     BUTTON_OFF_SECONDS = 5
 
@@ -34,12 +29,22 @@ class DefaultConfig(object):
     LED_PINS = [18, 23, 24]
 
     SOUNDFILE_ALLOWED_EXTENSIONS = {'wav', 'raw', 'pcm'}
-    SOUNDFILE_FOLDER = '${HOME}/Pi3Ctrl'
+    SOUNDFILE_FOLDER = '/opt/pi3ctrl/soundFiles'
     SOUNDFILE_PLAYER = '/usr/bin/aplay'
 
     MAX_CONTENT_LENGTH = 128 * 1000 * 1000  # 128MB
 
     SYSTEMD_STATUS = []
+
+    # Database
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///pi3ctrl.sqlite3'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Hostapd
+    HOSTAPD_COUNTRY_CODE = 'BE'
+    HOSTAPD_CHANNEL = 6
+    HOSTAPD_SSID = '${HOSTNAME}'
+    HOSTAPD_WPA_PASSPHRASE = 'ChangePassword!'
 
 
 def get_config():

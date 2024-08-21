@@ -3,13 +3,25 @@ import hashlib
 import os
 import shutil
 import socket
-from flask import Flask, flash, g, jsonify, redirect, request, render_template, send_from_directory, url_for
+import sqlite3
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for 
+)
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
 # Relative imports
 from .. import utils
-from ..db import query_db
+from ..database import db, Trigger
 from ..wifi import update_hostapd_config
 version_not_found = "[VERSION-NOT-FOUND]"
 try:
@@ -37,30 +49,35 @@ def create_app(test_config=None) -> Flask:
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
+    # store if platform is RPi
     is_RPi = utils.is_RPi
 
     # set cross-origin resource sharing
     CORS(app, resources=r'/*')
 
-    # set hostname and referers
-    hostname = socket.gethostname()
-    referers = ("http://127.0.0.1", f"http://{hostname.lower()}", f"http://{utils.get_ipv4_address()}")
-
-    # update the hostapd config
-    hostapd = update_hostapd_config(app.config, logger=app.logger)
-
-    # wifi secret
+    # hash secret
     app.config['SECRET_SHA256'] = hashlib.sha256(
-        bytes(app.config['SECRET_KEY'], 'utf-8')
+        bytes(app.config['CTRL_SECRET'], 'utf-8')
     ).hexdigest()
 
-    # prepare template globals (add to app.config)
+    # set hostname and referers
+    hostname = socket.gethostname()
+    referers = (
+        "http://127.0.0.1",
+        f"http://{hostname.lower()}",
+        f"http://{utils.get_ipv4_address()}"
+    )
+
+    # quick check for an internal request
+    def is_internal_referer():
+        if 'Referer' not in request.headers:
+            return False
+        return any(r in request.headers['Referer'] for r in referers)
+
+    # update the hostapd config
+    hostapd = update_hostapd_config(app.config)
+
+    # prepare template globals
     context_globals = dict(
         hostname=hostname.replace('.local', ''),
         version=version,
@@ -68,23 +85,17 @@ def create_app(test_config=None) -> Flask:
         hostapd=hostapd,
     )
 
-    # auto-close database connection
-    @app.teardown_appcontext
-    def close_connection(exception):
-        db = getattr(g, '_database', None)
-        if db is not None:
-            db.close()
+    # Initialize the database with the app
+    db.init_app(app)
+
+    # Create the database tables
+    with app.app_context():
+        db.create_all()
 
     # inject template globals
     @app.context_processor
     def inject_stage_and_region():
         return context_globals
-
-    # quick check for an internal request
-    def is_internal_referer():
-        if 'Referer' not in request.headers:
-            return False
-        return any(r in request.headers['Referer'] for r in referers)
 
     # create the routes
     @app.route("/", methods=['GET'])
@@ -197,5 +208,23 @@ def create_app(test_config=None) -> Flask:
     @app.route('/_soundfile/<name>')
     def download_soundfile(name):
         return send_from_directory(app.config["SOUNDFILE_FOLDER"], name)
+
+    @app.route('/_trigger/<int:pin>')
+    def add_trigger(pin: int):
+        # Add a new trigger
+        new_trigger = Trigger(pin=pin)
+        db.session.add(new_trigger)
+        db.session.commit()
+        return jsonify({'success': True}), 200
+
+    @app.route('/_triggers')
+    def get_triggers():
+        # Query the triggers table
+        triggers = Trigger.query.all()
+        trigger_info = [
+            f"Trigger ID: {trigger.id}, Created: {trigger.created}, Pin: {trigger.pin}"
+            for trigger in triggers
+        ]
+        return "<br>".join(trigger_info)
 
     return app
