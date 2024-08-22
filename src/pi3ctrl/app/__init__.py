@@ -3,7 +3,6 @@ import hashlib
 import os
 import shutil
 import socket
-import sqlite3
 from flask import (
     Flask,
     flash,
@@ -12,11 +11,9 @@ from flask import (
     render_template,
     request,
     send_from_directory,
-    session,
-    url_for 
+    url_for
 )
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
 # Relative imports
@@ -209,22 +206,10 @@ def create_app(test_config=None) -> Flask:
     def download_soundfile(name):
         return send_from_directory(app.config["SOUNDFILE_FOLDER"], name)
 
-    @app.route('/_trigger/<int:pin>')
-    def add_trigger(pin: int):
-        # Add a new trigger
-        new_trigger = Trigger(pin=pin)
-        db.session.add(new_trigger)
-        db.session.commit()
-        return jsonify({'success': True}), 200
-
     @app.route('/_triggers')
     def get_triggers():
         # Query the triggers table
         triggers = Trigger.query.all()
-        trigger_info = [
-            f"Trigger ID: {trigger.id}, Created: {trigger.created}, Pin: {trigger.pin}"
-            for trigger in triggers
-        ]
-        return "<br>".join(trigger_info)
+        return jsonify([trigger.serialize for trigger in triggers]), 200
 
     return app

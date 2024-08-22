@@ -9,11 +9,17 @@ import subprocess
 import sys
 
 # Relative imports
+from .app import create_app
+from .database import db, Trigger
 from .config import get_config
+
+
+__all__ = []
 
 
 # Load config as a dictionary
 config = get_config()
+
 
 # Create button and LED objects
 buttons = [Button(pin) for pin in json.loads(config['BUTTON_PINS'])]
@@ -55,6 +61,13 @@ def execute_command(button_index):
                 blink_thread.start()
             else:
                 led.off()
+
+        # Add trigger to database
+        with create_app().app_context() as ctx:
+            ctx.push()
+            new_triger = Trigger(pin=int(button.pin[4:]))
+            db.session.add(new_trigger)
+            db.session.commit()
 
         # Run the command
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
