@@ -18,7 +18,7 @@ def dump_datetime(value):
 
 # Define the Trigger class
 class Trigger(db.Model):
-    """Database table containing all trigger events, recording both the timestamp and pin."""
+    """Database table containing all GPIO trigger events, recording both the timestamp and pin."""
     __tablename__ = 'triggers'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
