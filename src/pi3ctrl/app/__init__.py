@@ -255,11 +255,13 @@ def create_app(test_config=None) -> Flask:
         # Construct metrics
         metrics = {}
         metrics['last'] = {df.tail(1).bp.values[0]: df.tail(1).created.dt.strftime('%d-%m-%Y %H:%M:%S').values[0]}
-
+        metrics['total'] = dict()
         for bp, grouped in df.groupby('bp'):
-            metrics[bp] = {}
+            metrics['total'][bp] = len(grouped)
             for metric in ('date', 'weekday', 'hour'):
-                metrics[bp][metric] = grouped.groupby([metric]).size().to_dict()
+                if metric not in metrics:
+                    metrics[metric] = dict()
+                metrics[metric][bp] = grouped.groupby([metric]).size().to_dict()
 
         return metrics
 
