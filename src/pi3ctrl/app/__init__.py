@@ -188,6 +188,9 @@ def create_app(test_config=None) -> Flask:
     @app.route('/_soundfile', methods=['POST'])
     def upload_soundfile():
         # check if the post request has the file part
+        if 'button' not in request.args.get('button'):
+            flash('No button provided')
+        button = request.args.get('file')
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
@@ -202,11 +205,11 @@ def create_app(test_config=None) -> Flask:
             file.save(os.path.join(app.config['SOUNDFILE_FOLDER'], filename))
             return redirect(url_for('_soundfile', name=filename))
 
-    @app.route('/_soundfile/<name>')
+    @app.route('/_soundfile/<name>', methods=['GET'])
     def download_soundfile(name):
         return send_from_directory(app.config["SOUNDFILE_FOLDER"], name)
 
-    @app.route('/_triggers')
+    @app.route('/_triggers', methods=['GET'])
     def get_triggers():
         # Query the triggers table
         triggers = Trigger.query.all()

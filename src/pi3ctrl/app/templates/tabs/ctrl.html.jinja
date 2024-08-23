@@ -13,11 +13,9 @@
 
   <hr class="my-4 my-md-5">
 
-  <form class="pb-4" id="ctrl-form" novalidate>
+  {% for sf in range(3) %}
 
-    {% for sf in range(3) %}
-
-    <h3 class="mb-3 hstack gap-3">Audio <div class="vr"></div> <small class="text-muted">SoundFile {{sf}}</small></h3>
+    <h3 class="mb-3 hstack gap-3">Button <div class="vr"></div> <small class="text-muted">{{sf}}</small></h3>
 
     <div class="row mb-2 mb-md-3">
       <div class="col-4 col-md-3 text-end">
@@ -31,7 +29,7 @@
     </div>
 
     <div class="row mb-2 mb-md-3">
-      <div class="col-4 col-md-3 text-end">Button PIN</div>
+      <div class="col-4 col-md-3 text-end">GPIO Button Pin</div>
       <div class="col-8 col-md-9">
         <span class="badge text-bg-primary">{{config['BUTTON_PINS'][sf]}}</span>
         <i class="bi bi-play-circle-fill"></i>
@@ -39,7 +37,7 @@
     </div>
 
     <div class="row mb-2 mb-md-3">
-      <div class="col-4 col-md-3 text-end">LED PIN</div>
+      <div class="col-4 col-md-3 text-end">GPIO LED Pin</div>
       <div class="col-8 col-md-9">
         <span class="badge text-bg-primary">{{config['LED_PINS'][sf]}}</span>
         <i class="bi bi-lightbulb-fill"></i>
@@ -47,18 +45,43 @@
     </div>
 
     <div class="row mb-2 mb-md-3">
-      <div class="d-none d-md-block col-md-3 text-md-end mt-2">Soundfile</div>
-      <div class="col-10 offset-2 col-md-9 offset-md-0">
-        <input type="file" class="form-control" id="audioClip{{sf}}File" />
-        <div class="invalid-feedback">
-          Please enter a valid file.
-        </div>
+      <div class="col-4 col-md-3 text-end">Sound File</div>
+      <div class="col-8 col-md-9">
+        <span class="badge text-bg-primary">{{config['LED_PINS'][sf]}}</span>
+        <i class="bi bi-lightbulb-fill"></i>
       </div>
     </div>
 
     <hr class="my-4 my-md-5">
 
-    {% endfor %}
+  {% endfor %}
+
+  <form class="pb-4" id="ctrl-form" novalidate>
+
+    <div class="row mb-2 mb-md-3">
+      <div class="d-none d-md-block col-md-3 text-md-end mt-2">Button</div>
+      <div class="col-10 offset-2 col-md-9 offset-md-0">
+        <select class="form-select" aria-label="Button">
+          <option selected>Select a button</option>
+          {% for pin in config.BUTTON_PINS %}
+          <option value="{{loop.index0}}">{{loop.index0}} (GPIO{{pin}})</option>
+          {% endfor %}
+        </select>
+        <div class="invalid-feedback">
+          Please select a button.
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-2 mb-md-3">
+      <div class="d-none d-md-block col-md-3 text-md-end mt-2">Soundfile</div>
+      <div class="col-10 offset-2 col-md-9 offset-md-0">
+        <input type="file" class="form-control" id="soundFile" />
+        <div class="invalid-feedback">
+          Please enter a valid file.
+        </div>
+      </div>
+    </div>
 
     <div class="row mt-5 mb-4 justify-content-end">
       <div class="col-md-9">

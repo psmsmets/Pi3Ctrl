@@ -29,7 +29,7 @@ class DefaultConfig(object):
     LED_PINS = [18, 23, 24]
 
     SOUNDFILE_ALLOWED_EXTENSIONS = {'wav', 'raw', 'pcm'}
-    SOUNDFILE_FOLDER = '/opt/pi3ctrl/soundFiles'
+    SOUNDFILE_FOLDER = 'soundFiles'
     SOUNDFILE_PLAYER = '/usr/bin/aplay'
 
     MAX_CONTENT_LENGTH = 128 * 1000 * 1000  # 128MB
