@@ -41,18 +41,9 @@ function getRelease() {
 }
 
 
-function resetWifiForm(form) {
+function validateForm(id, formCallBack) {
 
-    form.reset()
-    form.classList.remove('was-validated')
-    form.querySelector('button[type=submit]').disabled = false;
-
-}
-
-
-function validateWifiForm() {
-
-    var form = document.getElementById('wifi-add')
+    var form = document.getElementById(id)
 
     form.addEventListener('submit', function (event) {
 
@@ -61,7 +52,10 @@ function validateWifiForm() {
 
         if (form.checkValidity()) {
 
-            append_wpa_supplicant(form)
+            verifySecret().then(secret => {
+                if (secret === null) return
+                formCallBack(form)
+            })
             form.querySelector('button[type=submit]').disabled = true
 
         }
@@ -72,9 +66,18 @@ function validateWifiForm() {
 
     form.addEventListener('reset', function (event) {
 
-        resetWifiForm(form)
+        resetForm(form)
 
     }, false)
+
+}
+
+
+function resetForm(form) {
+
+    form.reset()
+    form.classList.remove('was-validated')
+    form.querySelector('button[type=submit]').disabled = false;
 
 }
 
@@ -127,58 +130,75 @@ function verifySecret() {
 
 function append_wpa_supplicant(form) {
 
-    verifySecret()
-        .then(secret => {
+    const ssid = form.elements["inputSSID"].value
+    const psk = form.elements["inputPSK"].value
 
-            if (secret === null) return
+    getResponse("/_append_wpa_supplicant", { ssid: ssid, passphrase: psk, secret: secret }, 'POST')
+        .then(resp => {
 
-            var ssid = form.elements["inputSSID"].value
-            var psk = form.elements["inputPSK"].value
+            if (resp.status !== 200) {
 
-            getResponse("/_append_wpa_supplicant", { ssid: ssid, passphrase: psk, secret: secret }, 'POST')
-                .then(resp => {
+                alert("Error: " + resp.responseText)
 
-                    if (resp.status !== 200) {
+            } else {
 
-                        alert("Error: " + resp.responseText)
+                alert("\"" + ssid + "\" added to the list of known wireless networks.")
 
-                    } else {
-    
-                        alert("\"" + ssid + "\" added to the list of known wireless networks.")
-                        resetWifiForm(form)
+                resetForm(form)
 
-                    }
+            }
 
-               });
-
-    });
+        });
 
 }
 
 
 function autohotspot() {
 
-    verifySecret()
-        .then(secret => {
+    getResponse("/_autohotspot", { secret: secret }, 'POST')
+        .then(resp => {
 
-            if (secret === null) return
+            if (resp.status !== 200) {
 
-            getResponse("/_autohotspot", { secret: secret }, 'POST')
-            .then(resp => {
+                alert("Error: " + resp.responseText)
 
-                if (resp.status !== 200) {
+            } else {
 
-                    alert("Error: " + resp.responseText)
+                alert("Wi-Fi autohotspot script triggered.\n\nConnection to the device could be lost.")
 
-                } else {
-
-                    alert("Wi-Fi autohotspot script triggered.\n\nConnection to the device could be lost.")
-
-                }
-
-            });
+            }
 
         });
+
+}
+
+
+function upload_soundfile(form) {
+
+    const files = document.getElementById("inputFile");
+    const button = form.elements["inputButton"].value;
+
+    const formData = new FormData(form);
+    formData.append("file", files.files[0]);
+    formData.append("button", button);
+
+    const requestOptions = {
+        headers: {
+            "Content-Type": files.files[0].contentType,
+        },
+        mode: "no-cors",
+        method: "POST",
+        files: files.files[0],
+        body: formData,
+    };
+    console.log(requestOptions);
+
+    fetch("_soundfile", requestOptions).then(
+        (response) => {
+            alert('File uploaded!');
+            resetForm(form)
+        }
+    );
 
 }
 
@@ -367,10 +387,14 @@ function loadContent(nav) {
 
             switch (tab) {
 
+                case "ctrl":
+                    validateForm('ctrl-upload', upload_soundfile)
+                    break;
+
                 case "wifi":
 		    loadConnectedSSID()
                     showPasswordToggle()
-                    validateWifiForm()
+                    validateForm('wifi-add', append_wpa_supplicant)
                     break;
 
                 case "status":

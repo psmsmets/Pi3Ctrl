@@ -22,14 +22,16 @@ class Trigger(db.Model):
     __tablename__ = 'triggers'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    button = db.Column(db.Integer, nullable=False)
     pin = db.Column(db.Integer, nullable=False)
     created = db.Column(db.TIMESTAMP, nullable=False, server_default=func.current_timestamp())
 
     @property
     def serialize(self):
-       """Return object data in easily serializable format"""
-       return {
-           "id" : self.id,
-           "pin": self.pin,
-           "created" : dump_datetime(self.created)
-       }
+        """Return object data in easily serializable format"""
+        return {
+            "id": self.id,
+            "button": self.button,
+            "pin": self.pin,
+            "created": dump_datetime(self.created)
+        }

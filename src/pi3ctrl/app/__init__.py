@@ -1,20 +1,19 @@
 # Mandatory imports
 import hashlib
 import os
+import pandas as pd
 import shutil
 import socket
 from flask import (
     Flask,
     flash,
     jsonify,
-    redirect,
     render_template,
     request,
-    send_from_directory,
-    url_for
+    send_from_directory
 )
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename
 
 # Relative imports
 from .. import utils
@@ -76,10 +75,11 @@ def create_app(test_config=None) -> Flask:
 
     # prepare template globals
     context_globals = dict(
-        hostname=hostname.replace('.local', ''),
-        version=version,
-        services=utils.core_services + app.config['SYSTEMD_STATUS'],
         hostapd=hostapd,
+        hostname=hostname.replace('.local', ''),
+        os=os,
+        services=utils.core_services + app.config['SYSTEMD_STATUS'],
+        version=version,
     )
 
     # Initialize the database with the app
@@ -185,34 +185,87 @@ def create_app(test_config=None) -> Flask:
         return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in exts
 
+    def soundFile(button: int, pin: int):
+        return f"soundFile.{button}.GPIO{pin}"
+
     @app.route('/_soundfile', methods=['POST'])
     def upload_soundfile():
-        # check if the post request has the file part
-        if 'button' not in request.args.get('button'):
-            flash('No button provided')
-        button = request.args.get('file')
+        if 'button' not in request.form:
+            return 'No button parameter provided', 423
+        button = int(request.form.get('button'))
+        pin = app.config['BUTTON_PINS'][button]
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+            return 'No file part', 422
         file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
         if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
+            return 'No selected file', 422
         if file and allowed_file(file.filename, 'SOUNDFILE'):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['SOUNDFILE_FOLDER'], filename))
-            return redirect(url_for('_soundfile', name=filename))
+            file.save(os.path.join(app.config['SOUNDFILE_FOLDER'], soundFile(button, pin)))
+            flash('New soundFile uploaded')
+            return 'File uploaded!', 200
 
-    @app.route('/_soundfile/<name>', methods=['GET'])
-    def download_soundfile(name):
-        return send_from_directory(app.config["SOUNDFILE_FOLDER"], name)
+    @app.route('/_soundfile', methods=['GET'])
+    def download_soundfile():
+        if 'button' not in request.args:
+            return 'No button parameter provided', 422
+        button = int(request.args.get('button'))
+        if 'pin' not in request.args:
+            return 'No pin parameter provided', 422
+        pin = int(request.args.get('pin'))
+        file = os.path.join(app.config["SOUNDFILE_FOLDER"], soundFile(button, pin))
+        if os.path.isfile(file):
+            return send_from_directory(app.config["SOUNDFILE_FOLDER"], soundFile(button, pin))
+        else:
+            return "File not found", 403
+
+    def get_triggers():
+        return [trigger.serialize for trigger in Trigger.query.all()]
+
+    @app.route('/_trigger/<int:button>/<int:pin>', methods=['GET'])
+    def trigger(button, pin):
+        new_trigger = Trigger(button=button, pin=pin)
+        db.session.add(new_trigger)
+        db.session.commit()
+        return 'OK'
 
     @app.route('/_triggers', methods=['GET'])
-    def get_triggers():
+    def triggers_api():
         # Query the triggers table
-        triggers = Trigger.query.all()
-        return jsonify([trigger.serialize for trigger in triggers]), 200
+        return jsonify(get_triggers()), 200
+
+    def get_metrics():
+        # Triggers dataframe
+        df = pd.DataFrame.from_records([trigger.serialize for trigger in Trigger.query.all()])
+
+        # Convert the 'created' column to datetime
+        df['created'] = pd.to_datetime(df['created'])
+
+        # Create the 'bp' column
+        df['bp'] = df.apply(lambda row: f"button {row['button']} | GPIO{row['pin']}", axis=1)
+
+        # Extract the hour from the 'created' column
+        df['hour'] = df['created'].dt.hour
+
+        # Extract the weekday from the 'created' column (0=Monday, 6=Sunday)
+        df['weekday'] = df['created'].dt.weekday
+
+        # Extract the date from the 'created' column
+        df['date'] = df['created'].dt.strftime('%Y-%m-%d')
+
+        # Construct metrics
+        metrics = {}
+        metrics['last'] = {df.tail(1).bp.values[0]: df.tail(1).created.dt.strftime('%d-%m-%Y %H:%M:%S').values[0]}
+
+        for bp, grouped in df.groupby('bp'):
+            metrics[bp] = {}
+            for metric in ('date', 'weekday', 'hour'):
+                metrics[bp][metric] = grouped.groupby([metric]).size().to_dict()
+
+        return metrics
+
+    @app.route('/_metrics', methods=['GET'])
+    def metrics_api():
+
+        return jsonify(get_metrics()), 200
 
     return app

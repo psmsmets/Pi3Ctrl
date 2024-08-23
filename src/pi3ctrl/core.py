@@ -44,14 +44,15 @@ def blink_led(led):
 # Function to execute the command and control LEDs
 def execute_command(button_index):
     def wrapper():
+        gpio_pin = int((buttons[button_index]).pin[4:])
         command = "{player} {sf}".format(
             player=config['SOUNDFILE_PLAYER'],
             sf=os.path.expandvars(os.path.join(
                 config['SOUNDFILE_FOLDER'],
-                f"soundFile{button_index}.wav"
+                f"soundFile.{button_index}.GPIO{gpio_pin}"
             ))
         )
-        print(f"Button {button_index} pressed, executing command: {command}")
+        print(f"Button {button_index} for GPIO{gpio_pin} pressed, executing command: {command}")
 
         # Turn off all LEDs and blink the pressed button's LED
         for i, led in enumerate(leds):
@@ -65,7 +66,7 @@ def execute_command(button_index):
         # Add trigger to database
         with create_app().app_context() as ctx:
             ctx.push()
-            new_triger = Trigger(pin=int(button.pin[4:]))
+            new_trigger = Trigger(button=button_index, pin=gpio_pin)
             db.session.add(new_trigger)
             db.session.commit()
 
