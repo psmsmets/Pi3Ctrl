@@ -55,7 +55,7 @@ def create_app(test_config=None) -> Flask:
 
     # hash secret
     app.config['SECRET_SHA256'] = hashlib.sha256(
-        bytes(app.config['CTRL_SECRET'], 'utf-8')
+        bytes(app.config['PI3CTRL_SECRET'], 'utf-8')
     ).hexdigest()
 
     # set hostname and referers
@@ -75,11 +75,15 @@ def create_app(test_config=None) -> Flask:
     # update the hostapd config
     hostapd = update_hostapd_config(app.config)
 
+    def has_soundFile(button, pin):
+        file = os.path.join(app.config["SOUNDFILE_FOLDER"], soundFile(button, pin))
+        return os.path.isfile(file)    
+
     # prepare template globals
     context_globals = dict(
+        has_soundFile=has_soundFile,
         hostapd=hostapd,
         hostname=hostname.replace('.local', ''),
-        os=os,
         services=utils.core_services + app.config['SYSTEMD_STATUS'],
         version=version,
     )
@@ -187,9 +191,6 @@ def create_app(test_config=None) -> Flask:
         return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in exts
 
-    def soundFile(button: int, pin: int):
-        return f"soundFile.{button}.GPIO{pin}"
-
     @app.route('/_soundfile', methods=['POST'])
     def upload_soundfile():
         if 'button' not in request.form:
@@ -272,3 +273,7 @@ def create_app(test_config=None) -> Flask:
         return jsonify(get_metrics()), 200
 
     return app
+
+
+def soundFile(button: int, pin: int):
+    return f"soundFile.{button}.GPIO{pin}"

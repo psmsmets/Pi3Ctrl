@@ -18,7 +18,7 @@ class DefaultConfig(object):
     FLASK_SECRET = SECRET_KEY
 
     # Pi3Ctrl
-    CTRL_SECRET = 'PleaseChange!'
+    PI3CTRL_SECRET = 'PleaseChange!'
 
     BUTTON_PINS = [17, 27, 22]
     BUTTON_OFF_SECONDS = 5

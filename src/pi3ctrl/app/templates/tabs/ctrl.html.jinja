@@ -47,10 +47,14 @@
     <div class="row mb-2 mb-md-3">
       <div class="col-4 col-md-3 text-end">Sound File</div>
       <div class="col-8 col-md-9">
+        {% if has_soundFile(sf, config['BUTTON_PINS'][sf]) %}
         <audio controls>
           <source src="{{url_for('upload_soundfile', button=sf, pin=config['BUTTON_PINS'][sf])}}" type="audio/wav">
           Your browser does not support the audio element.
         </audio>
+        {% else %}
+        <span class="badge text-bg-secondary">nothing found</span>
+        {% endif %}
       </div>
     </div>
 
