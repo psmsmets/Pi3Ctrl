@@ -2,7 +2,7 @@
 
 pip install .
 
-sudo rsync -amtv --chown=root:root src/etc/* /etc
+sudo rsync -amtv --chown=root:root etc/* /etc
 
 sudo systemctl daemon-reload
 sudo systemctl reset-failed
