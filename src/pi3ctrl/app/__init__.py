@@ -77,7 +77,7 @@ def create_app(test_config=None) -> Flask:
 
     def has_soundFile(button, pin):
         file = os.path.join(app.config["SOUNDFILE_FOLDER"], soundFile(button, pin))
-        return os.path.isfile(file)    
+        return os.path.isfile(file)
 
     # prepare template globals
     context_globals = dict(
