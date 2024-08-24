@@ -39,6 +39,8 @@ def create_app(test_config=None) -> Flask:
 
     if test_config is None:
         # load the instance config when not testing
+        if os.path.isfile('/etc/pi3ctrl/pi3ctrl.conf'):
+            app.config.from_pyfile('/etc/pi3ctrl/pi3ctrl.conf')
         if os.environ.get('PI3CTRL_CONFIG') is not None:
             app.config.from_envvar('PI3CTRL_CONFIG')
     else:
@@ -267,7 +269,6 @@ def create_app(test_config=None) -> Flask:
 
     @app.route('/_metrics', methods=['GET'])
     def metrics_api():
-
         return jsonify(get_metrics()), 200
 
     return app
