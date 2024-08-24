@@ -17,7 +17,8 @@ sudo systemctl disable hostapd
 
 sudo systemctl enable nginx
 sudo systemctl stop nginx
-sudo rm -f /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+sudo unlink /etc/nginx/sites-enabled/default
+sudo nginx -t
 sudo systemctl restart nginx
 
 sudo systemctl enable pi3ctrl-core.service 

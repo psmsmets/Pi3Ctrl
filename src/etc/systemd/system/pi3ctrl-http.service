@@ -1,17 +1,16 @@
 [Unit]
 Description=Pi3Ctrl http agent
-Wants=network-online.target
-After=network.target network-online.target
+After=network.target
  
 [Service]
 Type=simple
-#User=smh
-#Group=smh
-WorkingDirectory=/opt/
+User=smh
+Group=www-data
+WorkingDirectory=/opt/pi3ctrl
 Environment="VIRTUAL_ENV=/opt/py3"
 Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
 ExecStart=
-ExecStart=/usr/bin/sudo /usr/bin/nice -n -10 $VIRTUAL_ENV/bin/uwsgi --ini $VIRTUAL_ENV/share/pi3ctrl/uwsgi.ini
+ExecStart=$VIRTUAL_ENV/bin/uwsgi --ini $VIRTUAL_ENV/share/pi3ctrl/uwsgi.ini
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=pi3ctrl-http
