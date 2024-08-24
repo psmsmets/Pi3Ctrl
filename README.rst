@@ -12,6 +12,45 @@ Pi3Ctrl
 Python 3 event player for Raspberry Pi with GPIO control.
 
 
+Setup
+=====
+
+.. codeblock:: bash
+
+   git clone https://github.com/psmsmets/Pi3Ctrl.git
+
+   cd Pi3Ctrl
+
+   pip install .
+
+   sudo rsync -amtv --chown=root:root src/etc/* /etc
+
+   sudo systemctl daemon-reload
+   sudo systemctl reset-failed
+
+   sudo systemctl reset-failed dnsmasq
+   sudo systemctl unmask dnsmasq
+   sudo systemctl disable dnsmasq
+
+   sudo systemctl reset-failed hostapd
+   sudo systemctl unmask hostapd
+   sudo systemctl disable hostapd
+
+   sudo systemctl enable nginx
+   sudo systemctl restart nginx
+
+   sudo systemctl enable pi3ctrl-core.service 
+   sudo systemctl restart pi3ctrl-core.service
+
+   sudo systemctl enable pi3ctrl-http.service 
+   sudo systemctl restart pi3ctrl-http.service
+
+   sudo systemctl enable pi3ctrl-wifi.service 
+   sudo systemctl restart pi3ctrl-wifi.service
+
+
+
+
 Licensing
 =========
 

@@ -6,12 +6,11 @@ After=multi-user.target
 Type=simple
 #User=root
 #Group=root
-WorkingDirectory=/opt/smh/
-Environment="VIRTUAL_ENV=/opt/smh/py3"
+WorkingDirectory=/opt/
+Environment="VIRTUAL_ENV=/opt/py3"
 Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
-#EnvironmentFile=/opt/smh/.pi3ctrl.env
 ExecStart=
-ExecStart=/usr/bin/sudo $VIRTUAL_ENV/bin/bin/autohotspot
+ExecStart=/usr/bin/sudo $VIRTUAL_ENV/bin/autohotspot
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=pi3ctrl-wifi

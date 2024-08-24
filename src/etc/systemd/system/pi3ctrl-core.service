@@ -4,12 +4,11 @@ After=multi-user.target
  
 [Service]
 Type=simple
-#User=root
-#Group=root
-WorkingDirectory=/opt/smh/
-Environment="VIRTUAL_ENV=/opt/smh/py3"
+#User=smh
+#Group=smh
+WorkingDirectory=/opt/
+Environment="VIRTUAL_ENV=/opt/py3"
 Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
-#EnvironmentFile=/opt/smh/.pi3ctrl.env
 ExecStart=
 ExecStart=/usr/bin/nice -n 10 $VIRTUAL_ENV/bin/pi3ctrl-core
 StandardOutput=journal
