@@ -26,6 +26,12 @@ except (ModuleNotFoundError, AssertionError):
     version = version_not_found
 
 
+def soundFile(button: int, pin: int) -> str:
+    """Construct the soundFile name.
+    """
+    return f"soundFile.{button}.GPIO{pin}"
+
+
 # Create the Flask app
 def create_app(test_config=None) -> Flask:
     """Create and configure the Flask app
@@ -273,7 +279,3 @@ def create_app(test_config=None) -> Flask:
         return jsonify(get_metrics()), 200
 
     return app
-
-
-def soundFile(button: int, pin: int):
-    return f"soundFile.{button}.GPIO{pin}"

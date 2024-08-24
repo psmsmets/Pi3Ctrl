@@ -16,7 +16,7 @@
   {% for btn_pin in config.BUTTON_PINS %}
 
     {% set btn = loop.index0 %}
-    {% set led_in = config['LED_PINS'][btn] %}
+    {% set led_pin = config.LED_PINS[btn] %}
 
     <h3 class="mb-3 hstack gap-3">Button <div class="vr"></div> <small class="text-muted">#{{btn}}</small></h3>
 
