@@ -4,7 +4,7 @@ After=network.target
  
 [Service]
 Type=simple
-User=root
+User=pieter
 Group=www-data
 WorkingDirectory=/opt/py3
 ExecStart=/usr/bin/bash -c 'cd /opt/py3; source bin/activate; uwsgi --ini share/pi3ctrl/uwsgi.ini'
