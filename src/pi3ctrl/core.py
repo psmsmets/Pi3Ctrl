@@ -21,6 +21,8 @@ config = get_config()
 
 
 # Create button and LED objects
+print(config['BUTTON_PINS'], config['LED_PINS'])
+print(type(config['BUTTON_PINS'][0]), type(config['LED_PINS'][0])) 
 buttons = [Button(pin) for pin in config['BUTTON_PINS']]
 leds = [LED(pin) for pin in config['LED_PINS']]
 
