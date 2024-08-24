@@ -32,7 +32,7 @@ class DefaultConfig(object):
     SOUNDFILE_FOLDER = 'soundFiles'
     SOUNDFILE_PLAYER = '/usr/bin/aplay'
 
-    MAX_CONTENT_LENGTH = 128 * 1000 * 1000  # 128MB
+    MAX_CONTENT_LENGTH = 512 * 1000 * 1000  # 512MB
 
     SYSTEMD_STATUS = []
 

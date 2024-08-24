@@ -203,6 +203,34 @@ function upload_soundfile(form) {
 }
 
 
+function dataMetrics() {
+
+    getResponse('/_metrics', {}).then(function(resp) {
+
+        if (resp.status !== 200) return
+
+        var data = JSON.parse(resp.responseText)
+
+        // last
+        var obj = data['last']
+        var elem = document.querySelector('#metrics-last-button')
+        elem.innerHTML = Object.keys(obj)[0]
+        elem = document.querySelector('#metrics-last-timestamp')
+        elem.innerHTML = obj[Object.keys(obj)[0]];
+
+        // totals
+        var metrics = document.querySelector('#metrics-total')
+        var totals = data['total']
+        Object.keys(totals).forEach(function(key) {
+            metrics.innerHTML += ("<span class=\"badge text-bg-primary position-relative me-4\">" + key +
+                                 "<span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\">" + totals[key] + "</span></span>");
+        })
+
+    })
+
+}
+
+
 function updateStorage() {
 
     getResponse('/_storage').then(function(resp) {
@@ -389,6 +417,10 @@ function loadContent(nav) {
 
                 case "ctrl":
                     validateForm('ctrl-upload', upload_soundfile)
+                    break;
+
+                case "data":
+                    dataMetrics()
                     break;
 
                 case "wifi":
