@@ -246,6 +246,9 @@ def create_app(test_config=None) -> Flask:
         # Triggers dataframe
         df = pd.DataFrame.from_records([trigger.serialize for trigger in Trigger.query.all()])
 
+        if len(df) == 0:
+            return {}
+
         # Convert the 'created' column to datetime
         df['created'] = pd.to_datetime(df['created'])
 
