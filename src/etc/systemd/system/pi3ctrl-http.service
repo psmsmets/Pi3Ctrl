@@ -6,11 +6,8 @@ After=network.target
 Type=simple
 User=root
 Group=www-data
-WorkingDirectory=/opt/pi3ctrl
-Environment="VIRTUAL_ENV=/opt/py3"
-Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
-ExecStart=
-ExecStart=$VIRTUAL_ENV/bin/uwsgi --ini $VIRTUAL_ENV/share/pi3ctrl/uwsgi.ini
+WorkingDirectory=/opt/py3
+ExecStart=/usr/bin/bash -c 'cd /opt/py3; source bin/activate; uwsgi --ini share/pi3ctrl/uwsgi.ini'
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=pi3ctrl-http
