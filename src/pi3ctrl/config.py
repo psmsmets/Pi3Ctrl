@@ -57,7 +57,7 @@ def get_config():
 
     # load config from etc
     if os.path.isfile('/etc/pi3ctrl/pi3ctrl.conf'):
-        app.config.from_pyfile('/etc/pi3ctrl/pi3ctrl.conf')
+        config.from_pyfile('/etc/pi3ctrl/pi3ctrl.conf')
 
     # load config from environ
     if os.environ.get('PI3CTRL_CONFIG') is not None:
