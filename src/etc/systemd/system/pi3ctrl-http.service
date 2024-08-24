@@ -4,7 +4,7 @@ After=network.target
  
 [Service]
 Type=simple
-User=smh
+User=root
 Group=www-data
 WorkingDirectory=/opt/pi3ctrl
 Environment="VIRTUAL_ENV=/opt/py3"

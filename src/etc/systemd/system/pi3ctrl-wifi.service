@@ -4,9 +4,9 @@ After=multi-user.target
 
 [Service]
 Type=simple
-#User=root
-#Group=root
-WorkingDirectory=/opt/
+User=root
+Group=root
+WorkingDirectory=/opt/pi3ctrl/
 Environment="VIRTUAL_ENV=/opt/py3"
 Environment="PATH=$VIRTUAL_ENV/bin:$PATH"
 ExecStart=
