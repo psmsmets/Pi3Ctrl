@@ -17,22 +17,24 @@ __all__ = []
 
 
 # Load config as a dictionary
-config = get_config()
+_config = get_config()
 
 
 # Create button and LED objects
-buttons = [Button(pin) for pin in config['BUTTON_PINS']]
-leds = [LED(pin) for pin in config['LED_PINS']]
+_buttons = [Button(pin) for pin in _config['BUTTON_PINS']]
+_leds = [LED(pin) for pin in _config['LED_PINS']]
 
 
 # Function to set LEDs to standby mode
 def set_leds_standby():
+    leds = _leds
     for led in leds:
         led.on()
 
 
 # Function to blink LED
 def blink_led(led):
+    config = _config
     while True:
         led.on()
         sleep(config['LED_ON_SECONDS'])
@@ -42,8 +44,18 @@ def blink_led(led):
 
 # Function to execute the command and control LEDs
 def execute_command(button_index):
-    def wrapper():
+    def wrapper(button_index):
+        """Function handled when the GPIO pin is triggered.
+        """
+        # From global
+        config = _config
+        buttons = _buttons
+        leds = _leds
+
+        # Get button gpio pin from config
         button_pin = config['BUTTON_PINS'][button_index]
+
+        # Construct button command
         command = "{player} {sf}".format(
             player=config['SOUNDFILE_PLAYER'],
             sf=os.path.expandvars(os.path.join(
@@ -100,6 +112,10 @@ def exit_handler(signal, frame):
 def main():
     """
     """
+    # From global
+    config = _config
+    buttons = _buttons
+
     # Attach the execute_command function to each button
     for i, button in enumerate(buttons):
         button.when_pressed = execute_command(i)
