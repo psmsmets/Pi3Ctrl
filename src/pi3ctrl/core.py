@@ -86,7 +86,7 @@ def execute_command(button: Button):
     """Function handled when the GPIO pin is triggered."""
 
     if _execute_command_lock.locked():
-        print("Command already running, ignoring this press.")
+        _logger.warning("Command already running, ignoring this press.")
         return
 
     with _execute_command_lock:
@@ -112,7 +112,7 @@ def execute_command(button: Button):
             logger.info(f"Button {button.index} for {button.pin} pressed, executing command: {command}")
 
             # Turn off all LEDs and blink the pressed button's LED
-            print("Blink activated LED and disable other LEDs")
+            logger.debug("Blink activated LED and disable other LEDs")
             stop_event = Event()
             blink_thread = None
             for i, led in enumerate(leds):
@@ -150,7 +150,7 @@ def execute_command(button: Button):
             for btn in _buttons:
                 Thread(target=debounce_button, args=(btn, debounce_interval)).start()
 
-        logger.info(f"Button {button.index} when pressed function done.")
+        logger.info(f"Button {button.index} executing command done.")
 
 
 # Function to handle clean exit
