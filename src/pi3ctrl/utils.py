@@ -3,6 +3,7 @@ from configparser import ConfigParser, MissingSectionHeaderError
 from flask import current_app as app
 from logging import Logger
 from subprocess import Popen, PIPE
+import logging
 import os
 import socket
 import sys
@@ -172,3 +173,23 @@ def system_call(*args, logger: Logger = None, as_dict: bool = False, **kwargs):
         r = _resp_dict(returncode=e.errno, stderr=e.strerror) if as_dict else False
 
     return r
+
+
+def get_logger(prog=None, debug=False):
+    """Create the logger object
+    """
+    # create logger
+    logger = logging.getLogger(prog or __name__)
+
+    # log to stdout
+    streamHandler = logging.StreamHandler(sys.stdout)
+    streamHandler.setFormatter(logging.Formatter(
+        "%(levelname)s: %(message)s"
+        # "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    ))
+    logger.addHandler(streamHandler)
+
+    # set logger level
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
+
+    return logger
