@@ -3,6 +3,8 @@
 pip install .
 
 # apt
+sudo apt update
+sudo apt install -y rsyslog nginx dnsmasq hostapd
 sudo apt purge -y dns-root-data
 
 # /etc
