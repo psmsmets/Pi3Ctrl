@@ -267,7 +267,7 @@ def create_app(test_config=None) -> Flask:
 
         # Construct metrics
         metrics = {}
-        metrics['last'] = {df.tail(1).bp.values[0]: df.tail(1).created.dt.strftime('%d-%m-%Y %H:%M:%S').values[0]}
+        metrics['last'] = {df.tail(1).bp.values[0]: df.tail(1).created.dt.strftime('%Y-%m-%d %H:%M:%S').values[0]}
         metrics['total'] = dict()
         for bp, grouped in df.groupby('bp'):
             metrics['total'][bp] = len(grouped)
