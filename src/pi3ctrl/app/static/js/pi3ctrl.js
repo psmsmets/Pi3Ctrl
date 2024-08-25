@@ -26,7 +26,8 @@ function getRelease() {
     let promise2 = getResponse("/_version");
 
     // Resolve the promises
-    Promise.all([promise1, promise2]).then(function(values) {
+    Promise.all([promise1, promise2])
+    .then(function(values) {
         let [ resp, version ] = values.map(x => JSON.parse(x.response));
         let current = resp.shift();
 
@@ -52,9 +53,10 @@ function validateForm(id, formCallBack) {
 
         if (form.checkValidity()) {
 
-            verifySecret().then(secret => {
+            verifySecret()
+            .then(secret => {
                 if (secret === null) return
-                formCallBack(form)
+                formCallBack(form, secret)
             })
             form.querySelector('button[type=submit]').disabled = true
 
@@ -128,34 +130,37 @@ function verifySecret() {
 }
 
 
-function append_wpa_supplicant(form) {
+function append_wpa_supplicant(form, secret) {
 
     const ssid = form.elements["inputSSID"].value
     const psk = form.elements["inputPSK"].value
 
     getResponse("/_append_wpa_supplicant", { ssid: ssid, passphrase: psk, secret: secret }, 'POST')
-        .then(resp => {
+    .then(resp => {
 
-            if (resp.status !== 200) {
+        if (resp.status !== 200) {
 
-                alert("Error: " + resp.responseText)
+            alert("Error: " + resp.responseText)
 
-            } else {
+        } else {
 
-                alert("\"" + ssid + "\" added to the list of known wireless networks.")
+            alert("\"" + ssid + "\" added to the list of known wireless networks.")
+            resetForm(form)
 
-                resetForm(form)
+        }
 
-            }
-
-        });
+    });
 
 }
 
 
 function autohotspot() {
 
-    getResponse("/_autohotspot", { secret: secret }, 'POST')
+    verifySecret().then(secret => {
+
+        if (secret === null) return
+
+        getResponse("/_autohotspot", { secret: secret }, 'POST')
         .then(resp => {
 
             if (resp.status !== 200) {
@@ -170,17 +175,21 @@ function autohotspot() {
 
         });
 
+    })
+
 }
 
 
-function upload_soundfile(form) {
+function upload_soundfile(form, secret) {
 
     const files = document.getElementById("inputFile");
     const button = form.elements["inputButton"].value;
 
     const formData = new FormData(form);
+
     formData.append("file", files.files[0]);
     formData.append("button", button);
+    formData.append("secret", secret);
 
     const requestOptions = {
         headers: {
@@ -191,21 +200,26 @@ function upload_soundfile(form) {
         files: files.files[0],
         body: formData,
     };
-    console.log(requestOptions);
 
-    fetch("_soundfile", requestOptions).then(
-        (response) => {
+    fetch("_soundfile", requestOptions)
+    .then((resp) => {
+        if (resp.status !== 200) {
+            (resp.text()).then(data => {
+                alert("Error: " + data)
+            });
+        } else {
             alert('File uploaded!');
             resetForm(form)
         }
-    );
+    });
 
 }
 
 
 function dataMetrics() {
 
-    getResponse('/_metrics', {}).then(function(resp) {
+    getResponse('/_metrics', {})
+    .then(function(resp) {
 
         if (resp.status !== 200) return
 
@@ -233,7 +247,8 @@ function dataMetrics() {
 
 function updateStorage() {
 
-    getResponse('/_storage').then(function(resp) {
+    getResponse('/_storage')
+    .then(function(resp) {
 
         let data = JSON.parse(resp.response)
 
@@ -291,71 +306,71 @@ function statusUpdateLoop() {
 function statusUpdate() {
 
     getResponse('/_systemd_status', { service: '*' })
-        .then(function(resp) {
+    .then(function(resp) {
 
-            if (resp.status !== 200) return
+        if (resp.status !== 200) return
 
-            var data = JSON.parse(resp.responseText)
+        var data = JSON.parse(resp.responseText)
 
-            for (const [service, response] of Object.entries(data)) {
+        for (const [service, response] of Object.entries(data)) {
 
-                var id = '#' + service.replace('.', '-')
-                var obj_status = document.querySelector(id + '-status')
-                var obj_response = document.querySelector(id + '-response > .accordion-body')
+            var id = '#' + service.replace('.', '-')
+            var obj_status = document.querySelector(id + '-status')
+            var obj_response = document.querySelector(id + '-response > .accordion-body')
 
-                if (response.returncode === null) continue
+            if (response.returncode === null) continue
 
-                if (response.returncode === 4) {
+            if (response.returncode === 4) {
 
-                    obj_response.innerHTML = response.stderr
-                    obj_status.innerHTML = 'not found'
+                obj_response.innerHTML = response.stderr
+                obj_status.innerHTML = 'not found'
 
-                    if (!obj_status.classList.contains('bg-secondary')) {
+                if (!obj_status.classList.contains('bg-secondary')) {
 
-                        obj_status.classList.remove('bg-success', 'bg-warning', 'bg-danger')
-                        obj_status.classList.add('bg-secondary')
-
-                    }
-
-                    continue;
+                    obj_status.classList.remove('bg-success', 'bg-warning', 'bg-danger')
+                    obj_status.classList.add('bg-secondary')
 
                 }
 
-                obj_response.innerHTML = response.stdout
-                obj_status.innerHTML = response.status
+                continue;
 
-                if (response.returncode === 0) {
+            }
 
-                    if (!obj_status.classList.contains('bg-success')) {
+            obj_response.innerHTML = response.stdout
+            obj_status.innerHTML = response.status
 
-                        obj_status.classList.remove('bg-secondary', 'bg-warning', 'bg-danger')
-                        obj_status.classList.add('bg-success')
+            if (response.returncode === 0) {
 
-                    }
+                if (!obj_status.classList.contains('bg-success')) {
 
-                } else if (response.status.includes('activating') || response.status.includes('inactive')) {
+                    obj_status.classList.remove('bg-secondary', 'bg-warning', 'bg-danger')
+                    obj_status.classList.add('bg-success')
 
-                    if (!obj_status.classList.contains('bg-warning')) {
+                }
 
-                        obj_status.classList.remove('bg-secondary', 'bg-success', 'bg-danger')
-                        obj_status.classList.add('bg-warning')
+            } else if (response.status.includes('activating') || response.status.includes('inactive')) {
 
-                    }
+                if (!obj_status.classList.contains('bg-warning')) {
 
-                } else {
+                    obj_status.classList.remove('bg-secondary', 'bg-success', 'bg-danger')
+                    obj_status.classList.add('bg-warning')
 
-                    if (!obj_status.classList.contains('bg-danger')) {
+                }
 
-                        obj_status.classList.remove('bg-secondary', 'bg-success', 'bg-warning')
-                        obj_status.classList.add('bg-danger')
+            } else {
 
-                    }
+                if (!obj_status.classList.contains('bg-danger')) {
+
+                    obj_status.classList.remove('bg-secondary', 'bg-success', 'bg-warning')
+                    obj_status.classList.add('bg-danger')
 
                 }
 
             }
 
-        })
+        }
+
+    })
 
 }
 
@@ -379,7 +394,8 @@ function bytes(bytes, label) {
 
 function loadConnectedSSID() {
 
-    getResponse('/_ssid').then(function(resp) {
+    getResponse('/_ssid')
+    .then(function(resp) {
         document.getElementById("ssid-connected").innerHTML = `Connected to <b>${JSON.parse(resp.response).ssid}</b>`
     });
 
@@ -405,12 +421,12 @@ function loadContent(nav) {
 
     // lazy load new content and trigger nav related functions
     getResponse("/_tab/" + tab)
-        .then(function(resp) {
+    .then(function(resp) {
 
-            if (resp.status !== 200) { console.log(resp); return; }
-            content.innerHTML = JSON.parse(resp.responseText).html
+        if (resp.status !== 200) { console.log(resp); return; }
+        content.innerHTML = JSON.parse(resp.responseText).html
 
-        })
+    })
         .finally(function() {
 
             switch (tab) {

@@ -6,7 +6,6 @@ import shutil
 import socket
 from flask import (
     Flask,
-    flash,
     jsonify,
     render_template,
     request,
@@ -199,19 +198,21 @@ def create_app(test_config=None) -> Flask:
 
     @app.route('/_soundfile', methods=['POST'])
     def upload_soundfile():
+        secret = request.form.get('secret')
+        if secret != app.config['SECRET_SHA256']:
+            return "Secret invalid", 403
         if 'button' not in request.form:
-            return 'No button parameter provided', 423
+            return "No button parameter provided", 423
         button = int(request.form.get('button'))
         pin = app.config['BUTTON_PINS'][button]
         if 'file' not in request.files:
-            return 'No file part', 422
+            return "No file part", 422
         file = request.files['file']
         if file.filename == '':
-            return 'No selected file', 422
+            return "No selected file", 422
         if file and allowed_file(file.filename, 'SOUNDFILE'):
             file.save(os.path.join(app.config['SOUNDFILE_FOLDER'], soundFile(button, pin)))
-            flash('New soundFile uploaded')
-            return 'File uploaded!', 200
+            return "File uploaded!", 200
 
     @app.route('/_soundfile', methods=['GET'])
     def download_soundfile():
