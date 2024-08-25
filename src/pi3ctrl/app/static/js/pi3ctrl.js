@@ -223,10 +223,10 @@ function dataMetrics() {
 
         if (resp.status !== 200) return
 
-        var data = JSON.parse(resp.responseText)
+        var dataset = JSON.parse(resp.responseText)
 
         // last
-        var obj = data['last']
+        var obj = dataset['last']
         var elem = document.querySelector('#metrics-last-button')
         elem.innerHTML = Object.keys(obj)[0]
         elem = document.querySelector('#metrics-last-timestamp')
@@ -234,11 +234,44 @@ function dataMetrics() {
 
         // totals
         var metrics = document.querySelector('#metrics-total')
-        var totals = data['total']
+        var totals = dataset['total']
         Object.keys(totals).forEach(function(key) {
             metrics.innerHTML += ("<span class=\"badge text-bg-primary position-relative me-4\">" + key +
                                  "<span class=\"position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger\">" + totals[key] + "</span></span>");
         })
+
+        // date chart
+       const seriesData = Object.keys(dataset.date).map(button => {
+           const data = Object.entries(dataset.date[button]).map(([date, count]) => {
+               const timestamp = new Date(date).getTime(); // Convert date to timestamp
+               return [timestamp, count];
+           });
+
+           return {
+               name: button,
+               data: data.sort((a, b) => a[0] - b[0]) // Ensure data is sorted by date
+           };
+       });
+       Highcharts.chart('highcharts-date', {
+           chart: {
+               type: 'line'
+           },
+           title: {
+               text: 'Button Activity Over Time'
+           },
+           xAxis: {
+               type: 'datetime',
+               title: {
+                   text: 'Date'
+               }
+           },
+           yAxis: {
+               title: {
+                   text: 'Count'
+               }
+           },
+           series: seriesData // Use the prepared series data
+       });
 
     })
 
