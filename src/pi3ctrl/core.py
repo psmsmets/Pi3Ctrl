@@ -43,7 +43,7 @@ def blink_led(led):
 
 
 # Function to execute the command and control LEDs
-def execute_command(button: Button, button_index: int) -> None:
+def execute_command(button: Button):
     """Function handled when the GPIO pin is triggered.
     """
     # From global
@@ -56,16 +56,16 @@ def execute_command(button: Button, button_index: int) -> None:
         player=config['SOUNDFILE_PLAYER'],
         sf=os.path.expandvars(os.path.join(
             config['SOUNDFILE_FOLDER'],
-            f"soundFile.{button_index}.{button.pin}"
+            f"soundFile.{button.index}.{button.pin}"
         ))
     )
-    print(f"Button {button_index} for {button.pin} pressed, executing command: {command}")
+    print(f"Button {button.index} for {button.pin} pressed, executing command: {command}")
 
     # Turn off all LEDs and blink the pressed button's LED
     for i, led in enumerate(leds):
-        if i == button_index:
+        if i == button.index:
             led.off()
-            blink_thread = Thread(target=blink_led, args=(leds[button_index],))
+            blink_thread = Thread(target=blink_led, args=(leds[button.index],))
             blink_thread.start()
         else:
             led.off()
@@ -73,7 +73,7 @@ def execute_command(button: Button, button_index: int) -> None:
     # Add trigger to database
     with create_app().app_context() as ctx:
         ctx.push()
-        new_trigger = Trigger(button=button_index, pin=button.pin.number)
+        new_trigger = Trigger(button=button.index, pin=button.pin.number)
         db.session.add(new_trigger)
         db.session.commit()
 
@@ -83,20 +83,18 @@ def execute_command(button: Button, button_index: int) -> None:
 
     # Disable all buttons
     for i, button in enumerate(buttons):
-        if i != button_index:
+        if i != button.index:
             button.when_pressed = None
 
     # Re-enable all buttons and set LEDs to standby mode after a delay
     sleep(config['BUTTON_OFF_SECONDS'])
-    for i, button in enumerate(buttons):
-        if i != button_index:
-            button.when_pressed = execute_command(i)
+    for button in buttons:
+        if i != button.index:
+            button.when_pressed = execute_command
 
     # Stop blinking and set LEDs to standby mode
     blink_thread.join()
     set_leds_standby()
-
-    return None
 
 
 # Function to handle clean exit
@@ -113,7 +111,8 @@ def main():
     buttons = _buttons
 
     # Attach the execute_command function to each button
-    for button in enumerate(buttons):
+    for i, button in enumerate(buttons):
+        button.index = i
         button.when_pressed = execute_command
 
     # Attach the exit handler to SIGINT (Ctrl+C)
