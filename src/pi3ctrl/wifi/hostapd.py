@@ -8,7 +8,7 @@ from importlib import resources
 
 # Relative imports
 from .. import wifi
-from ..utils import is_RPi, system_call
+from ..utils import is_RPi, parse_config, system_call
 
 
 __all__ = ['read_hostapd_config', 'write_hostapd_config', 'update_hostapd_config']
@@ -30,13 +30,8 @@ def expand_env(var: str) -> str:
 
 def read_hostapd_config(**kwargs) -> Config:
     """Read the hostapd configuration from the config file."""
-    # init config object
-    config = Config('')
-
-    # read the hostapd config
-    config.from_pyfile(_hostapd_cfg)
-
-    return config
+    config = parse_config(_hostapd_cfg)
+    return dict(config.items('DEFAULT'))
 
 
 def write_hostapd_config(config, **kwargs) -> None:

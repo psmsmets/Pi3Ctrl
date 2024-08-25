@@ -1,4 +1,5 @@
 # absolute imports
+from configparser import ConfigParser, MissingSectionHeaderError
 from flask import current_app as app
 from logging import Logger
 from subprocess import Popen, PIPE
@@ -45,6 +46,41 @@ def get_ipv4_address() -> str:
     except OSError:
         ip = None
     return ip or "127.0.0.1"
+
+
+def parse_config(configfiles, config=None, defaults=None, logger=None, environ=False, **kwargs):
+    """Parse a single config file using ConfigParser.read() while catching the
+    MissingSectionHeaderError to the section '[DEFAULT]'.
+    """
+
+    # Init object with defaults
+    if defaults is True:
+        defaults = os.environ
+
+    config = config or ConfigParser(defaults=defaults, **kwargs)
+
+    # Config paths should be list or tuple
+    if isinstance(configfiles, str):
+        configfiles = [configfiles]
+    elif not isinstance(configfiles, (list, tuple)):
+        raise TypeError('configfiles should be a str or a list/tuple of str')
+
+    # Parse files and add DEFAULT section if missing
+    for configfile in configfiles:
+
+        configfile = os.path.expandvars(configfile)
+
+        if not os.path.isfile(configfile):
+            continue
+
+        with open(configfile, 'r') as f:
+            try:
+                config.read_file(f, source=config)
+            except MissingSectionHeaderError:
+                f_str = '[DEFAULT]\n' + f.read()
+                config.read_string(f_str)
+
+    return config
 
 
 def systemd_status(service: str) -> dict:
