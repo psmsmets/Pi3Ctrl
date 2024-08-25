@@ -107,16 +107,17 @@ def execute_command(button: Button):
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
     print(f"Command output: {result.stdout}")
 
+    # Stop blinking and set LEDs to standby mode
+    print("Reset LEDs")
+    blink_thread.stop()
+    blink_thread.join()
+    set_leds_standby()
+
     # Re-enable all buttons and set LEDs to standby mode after a delay
     print("Re-enable buttons")
     sleep(config['BUTTON_OFF_SECONDS'])
     for button in buttons:
         button.when_pressed = execute_command
-
-    # Stop blinking and set LEDs to standby mode
-    print("Reset LEDs")
-    blink_thread.join()
-    set_leds_standby()
 
     print(f"Button {button.index} when pressed function done.")
 
