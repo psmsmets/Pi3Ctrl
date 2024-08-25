@@ -313,7 +313,7 @@ function dataMetrics() {
        });
 
        // Map the weekday numbers to names
-       const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+       const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
        // weekday series
        const weekdaySeries = Object.keys(dataset.weekday).map(button => {
