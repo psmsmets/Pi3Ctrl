@@ -16,13 +16,31 @@ from .config import get_config
 __all__ = []
 
 
+# Create a subclass of Button
+class IndexedButton(Button):
+    def __init__(self, pin, index, *args, **kwargs):
+        # Initialize the Button class with its original parameters
+        super().__init__(pin, *args, **kwargs)
+        # Add the index attribute
+        self.index = index
+
+
+# Create a subclass of LED
+class IndexedLED(LED):
+    def __init__(self, pin, index, *args, **kwargs):
+        # Initialize the Button class with its original parameters
+        super().__init__(pin, *args, **kwargs)
+        # Add the index attribute
+        self.index = index
+
+
 # Load config as a dictionary
 _config = get_config()
 
 
 # Create button and LED objects
-_buttons = [Button(pin) for pin in _config['BUTTON_PINS']]
-_leds = [LED(pin) for pin in _config['LED_PINS']]
+_buttons = [IndexedButton(pin, index=i) for i, pin in enumerate(_config['BUTTON_PINS'])]
+_leds = [IndexedLED(pin, index=i) for i, pin in enumerate(_config['LED_PINS'])]
 
 
 # Function to set LEDs to standby mode
@@ -111,8 +129,7 @@ def main():
     buttons = _buttons
 
     # Attach the execute_command function to each button
-    for i, button in enumerate(buttons):
-        button.index = i
+    for button in buttons:
         button.when_pressed = execute_command
 
     # Attach the exit handler to SIGINT (Ctrl+C)
