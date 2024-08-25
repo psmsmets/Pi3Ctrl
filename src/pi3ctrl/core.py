@@ -1,6 +1,6 @@
 # Absolute imports
 from gpiozero import Button, LED
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from time import sleep
 import os
 import signal
@@ -37,10 +37,13 @@ class IndexedLED(LED):
 # Load config as a dictionary
 _config = get_config()
 
-
 # Create button and LED objects
 _buttons = [IndexedButton(pin, index=i) for i, pin in enumerate(_config['BUTTON_PINS'])]
 _leds = [IndexedLED(pin, index=i) for i, pin in enumerate(_config['LED_PINS'])]
+
+
+# Init command lock
+_execute_command_lock = Lock()
 
 
 # Function to set LEDs to standby mode
@@ -60,69 +63,81 @@ def blink_led(led, stop_event):
         sleep(config['LED_OFF_SECONDS'])
 
 
+def debounce_button(button, interval):
+    button.when_pressed = None  # Temporarily disable the button
+    sleep(interval)  # Wait for debounce interval
+    button.when_pressed = execute_command  # Re-enable the button
+
+
 # Function to execute the command and control LEDs
 def execute_command(button: Button):
-    """Function handled when the GPIO pin is triggered.
-    """
-    # From global
-    config = _config
-    buttons = _buttons
-    leds = _leds
+    """Function handled when the GPIO pin is triggered."""
 
-    # Construct button command
-    command = "{player} {sf} -v".format(
-        player=config['SOUNDFILE_PLAYER'],
-        sf=os.path.expandvars(os.path.join(
-            config['SOUNDFILE_FOLDER'],
-            f"soundFile.{button.index}.{button.pin}"
-        ))
-    )
-    print(f"Button {button.index} for {button.pin} pressed, executing command: {command}")
+    if _execute_command_lock.locked():
+        print("Command already running, ignoring this press.")
+        return
 
-    # Disable all buttons
-    print("Disable buttons")
-    for i, button in enumerate(buttons):
-        button.when_pressed = None
+    with _execute_command_lock:
 
-    # Turn off all LEDs and blink the pressed button's LED
-    print("Blink activated LED and disable other LEDs")
-    stop_event = Event()
-    blink_thread = None
-    for i, led in enumerate(leds):
-        if i == button.index:
-            led.off()
-            blink_thread = Thread(target=blink_led, args=(leds[button.index], stop_event))
-            blink_thread.start()
-        else:
-            led.off()
+        # Disable all buttons immediately to prevent multiple triggers
+        for btn in _buttons:
+            btn.when_pressed = None
 
-    # Add trigger to database
-    print("Add trigger to database")
-    with create_app().app_context() as ctx:
-        ctx.push()
-        new_trigger = Trigger(button=button.index, pin=button.pin.number)
-        db.session.add(new_trigger)
-        db.session.commit()
+        try:
+            # From global
+            config = _config
+            leds = _leds
 
-    # Run the command
-    print("Execute command")
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    print(f"Command output: {result.stdout}")
+            # Construct button command
+            command = "{player} {sf} -v".format(
+                player=config['SOUNDFILE_PLAYER'],
+                sf=os.path.expandvars(os.path.join(
+                    config['SOUNDFILE_FOLDER'],
+                    f"soundFile.{button.index}.{button.pin}"
+                ))
+            )
+            print(f"Button {button.index} for {button.pin} pressed, executing command: {command}")
 
-    # Stop blinking and set LEDs to standby mode
-    print("Reset LEDs")
-    if blink_thread is not None:
-        stop_event.set()
-        blink_thread.join()
-    set_leds_standby()
+            # Turn off all LEDs and blink the pressed button's LED
+            print("Blink activated LED and disable other LEDs")
+            stop_event = Event()
+            blink_thread = None
+            for i, led in enumerate(leds):
+                if i == button.index:
+                    led.off()
+                    blink_thread = Thread(target=blink_led, args=(leds[button.index], stop_event))
+                    blink_thread.start()
+                else:
+                    led.off()
 
-    # Re-enable all buttons and set LEDs to standby mode after a delay
-    print("Re-enable buttons")
-    sleep(config['BUTTON_OFF_SECONDS'])
-    for button in buttons:
-        button.when_pressed = execute_command
+            # Add trigger to database
+            print("Add trigger to database")
+            with create_app().app_context() as ctx:
+                ctx.push()
+                new_trigger = Trigger(button=button.index, pin=button.pin.number)
+                db.session.add(new_trigger)
+                db.session.commit()
 
-    print(f"Button {button.index} when pressed function done.")
+            # Run the command
+            print("Execute command")
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            print(f"Command output: {result.stdout}")
+
+        finally:
+            # Stop blinking, reset LEDs, re-enable buttons with debounce
+            print("Reset LEDs")
+            if blink_thread is not None:
+                stop_event.set()
+                blink_thread.join()
+            set_leds_standby()
+
+            # Re-enable buttons with a debounce period
+            print("Re-enable buttons")
+            debounce_interval = 0.3  # 300ms debounce interval
+            for btn in _buttons:
+                Thread(target=debounce_button, args=(btn, debounce_interval)).start()
+
+        print(f"Button {button.index} when pressed function done.")
 
 
 # Function to handle clean exit
