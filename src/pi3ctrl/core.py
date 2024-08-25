@@ -79,7 +79,13 @@ def execute_command(button: Button):
     )
     print(f"Button {button.index} for {button.pin} pressed, executing command: {command}")
 
+    # Disable all buttons
+    print("Disable buttons")
+    for i, button in enumerate(buttons):
+        button.when_pressed = None
+
     # Turn off all LEDs and blink the pressed button's LED
+    print("Blink activated LED and disable other LEDS")
     for i, led in enumerate(leds):
         if i == button.index:
             led.off()
@@ -89,6 +95,7 @@ def execute_command(button: Button):
             led.off()
 
     # Add trigger to database
+    print("Add trigger to database")
     with create_app().app_context() as ctx:
         ctx.push()
         new_trigger = Trigger(button=button.index, pin=button.pin.number)
@@ -96,23 +103,22 @@ def execute_command(button: Button):
         db.session.commit()
 
     # Run the command
+    print("Execute command")
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    print(f"Command output:\n{result.stdout}")
-
-    # Disable all buttons
-    for i, button in enumerate(buttons):
-        if i != button.index:
-            button.when_pressed = None
+    print(f"Command output: {result.stdout}")
 
     # Re-enable all buttons and set LEDs to standby mode after a delay
+    print("Re-enable buttons")
     sleep(config['BUTTON_OFF_SECONDS'])
     for button in buttons:
-        if i != button.index:
-            button.when_pressed = execute_command
+        button.when_pressed = execute_command
 
     # Stop blinking and set LEDs to standby mode
+    print("Reset LEDs")
     blink_thread.join()
     set_leds_standby()
+
+    print(f"Button {button.index} when pressed function done.")
 
 
 # Function to handle clean exit
