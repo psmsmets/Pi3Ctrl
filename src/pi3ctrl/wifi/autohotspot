@@ -129,6 +129,8 @@ chksys()
 	systemctl disable dnsmasq >/dev/null 2>&1
 	systemctl stop dnsmasq >/dev/null 2>&1
     fi
+    # Make sure wlan is unblocked
+    rfkill unblock wlan
 }
 
 
