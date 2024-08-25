@@ -188,7 +188,7 @@ FindSSID()
         then
             # Valid SSID found, passing to script
             echo "SSID '$ssid' detected, assessing Wi-Fi status"
-            ssidChk=$ssid
+            ssidChk="$ssid"
             return 0
         else
             # No Network found, NoSSID issued
