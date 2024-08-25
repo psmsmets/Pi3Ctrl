@@ -52,13 +52,13 @@ isRaspberryPi
 if (($# != 2 )); then
     badUsage "Illegal number of arguments"
 fi
-if ((${#1} < 1 )) | ((${#1} > 63)); then
+if (("${#1}" < 1 )) | (("${#1}" > 63)); then
     badUsage "ssid should be 1..63 characters."
 fi
-if ((${#2} < 8 )) | ((${#2} > 63)); then
+if (("${#2}" < 8 )) | (("${#2}" > 63)); then
     badUsage "passphrase should be 8..63 characters."
 fi
-
+echo "$1" "$2"
 # Add empty line if wpa_supplicant.conf exists
 if [ -f $WPA_CONF ];
 then
@@ -68,7 +68,7 @@ else
 fi
 
 # Encrypt psk and add to wpa_supplicant.conf
-wpa_passphrase $1 $2 | sed '3d;2i\\tkey_mgmt=WPA-PSK\n\tpriority=0' | sudo tee -a $WPA_CONF
+wpa_passphrase "$1" "$2" | sed '3d;2i\\tkey_mgmt=WPA-PSK\n\tpriority=0' | sudo tee -a $WPA_CONF
 
 # Trigger connection
 sudo systemctl start pi3ctrl-wifi.service
