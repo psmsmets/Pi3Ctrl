@@ -1,6 +1,6 @@
 # Absolute imports
 from gpiozero import Button, LED
-from threading import Thread
+from threading import Thread, Event
 from time import sleep
 import os
 import signal
@@ -50,10 +50,10 @@ def set_leds_standby():
         led.on()
 
 
-# Function to blink LED
-def blink_led(led):
+# Function to blink LED with an event to stop blinking
+def blink_led(led, stop_event):
     config = _config
-    while True:
+    while not stop_event.is_set():
         led.on()
         sleep(config['LED_ON_SECONDS'])
         led.off()
@@ -85,11 +85,13 @@ def execute_command(button: Button):
         button.when_pressed = None
 
     # Turn off all LEDs and blink the pressed button's LED
-    print("Blink activated LED and disable other LEDS")
+    print("Blink activated LED and disable other LEDs")
+    stop_event = Event()
+    blink_thread = None
     for i, led in enumerate(leds):
         if i == button.index:
             led.off()
-            blink_thread = Thread(target=blink_led, args=(leds[button.index],))
+            blink_thread = Thread(target=blink_led, args=(leds[button.index], stop_event))
             blink_thread.start()
         else:
             led.off()
@@ -109,7 +111,9 @@ def execute_command(button: Button):
 
     # Stop blinking and set LEDs to standby mode
     print("Reset LEDs")
-    blink_thread.join()
+    if blink_thread is not None:
+        stop_event.set()
+        blink_thread.join()
     set_leds_standby()
 
     # Re-enable all buttons and set LEDs to standby mode after a delay
