@@ -70,7 +70,7 @@ def execute_command(button: Button):
     leds = _leds
 
     # Construct button command
-    command = "{player} {sf}".format(
+    command = "{player} {sf} -v".format(
         player=config['SOUNDFILE_PLAYER'],
         sf=os.path.expandvars(os.path.join(
             config['SOUNDFILE_FOLDER'],
@@ -109,7 +109,6 @@ def execute_command(button: Button):
 
     # Stop blinking and set LEDs to standby mode
     print("Reset LEDs")
-    blink_thread.stop()
     blink_thread.join()
     set_leds_standby()
 
