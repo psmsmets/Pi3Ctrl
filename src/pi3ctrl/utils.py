@@ -74,7 +74,7 @@ def wifi_ssid_passphrase(ssid: str, passphrase: str) -> dict:
     """Add Wi-Fi ssid and passphrase to wpa_supplicant and connect.
     """
     cmd = os.path.join(os.path.dirname(sys.executable), 'append_wpa_supplicant')
-    return system_call([cmd, ssid, passphrase], as_dict=True)
+    return system_call(['/usr/bin/sudo', cmd, ssid, passphrase], as_dict=True)
 
 
 def wifi_autohotspot() -> dict:
