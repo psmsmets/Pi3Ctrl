@@ -23,18 +23,18 @@
       <label for="staticNetworkName" class="col-form-label">Name/SSID</label>
     </div>
     <div class="col-md-9">
-      <input type="text" class="form-control" id="staticNetworkName" value="{{hostapd.SSID}}" readonly>
+      <input type="text" class="form-control" id="staticNetworkName" value="{{hostapd.ssid}}" readonly>
     </div>
   </div>
 
   <div class="row mb-4">
     <div class="col-md-3 text-md-end">
-      <label for="staticPassword" class="col-form-label">WPA{{hostapd.WPA}} passphrase</label>
+      <label for="staticPassword" class="col-form-label">WPA{{hostapd.wpa}} passphrase</label>
     </div>
     <div class="col-md-9">
 
       <div class="input-group toggle-password">
-        <input type="password" class="form-control" id="staticPassword" value="{{hostapd.WPA_PASSPHRASE}}"
+        <input type="password" class="form-control" id="staticPassword" value="{{hostapd.wpa_passphrase}}"
          readonly>
         <button type="button" class="d-none btn btn-outline-secondary"
          aria-label="Show password as plain text."
