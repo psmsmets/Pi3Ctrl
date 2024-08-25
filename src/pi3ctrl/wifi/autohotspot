@@ -46,15 +46,15 @@ isRoot
 
 
 wifidev="wlan0" #device name to use. Default is wlan0.
-#use the command: iw dev ,to see Wi-Fi interface name 
+#use the command: iw dev, to see Wi-Fi interface name 
 
-IFSdef=$IFS
-cnt=0
 #These four lines capture the Wi-Fi networks the RPi is setup to use
-wpassid=$(awk '/ssid="/{ print $0 }' /etc/wpa_supplicant/wpa_supplicant.conf | awk -F'ssid=' '{ print $2 }' | sed 's/\r//g'| awk 'BEGIN{ORS=","} {print}' | sed 's/\"/''/g' | sed 's/,$//')
-IFS=","
+IFSdef=$IFS
+#wpassid=$(awk '/ssid="/{ print $0 }' /etc/wpa_supplicant/wpa_supplicant.conf | awk -F'ssid=' '{ print $2 }' | sed 's/\r//g'| awk 'BEGIN{ORS=","} {print}' | sed 's/\"//g' | sed 's/,$//')
+wpassid=$(grep -oP '(?<=ssid=").*?(?=")' /etc/wpa_supplicant/wpa_supplicant.conf | tr '\n' ',' | sed 's/,$//')
+IFS=","  # Setting the Internal Field Separator to comma
 ssids=($wpassid)
-IFS=$IFSdef #reset back to defaults
+IFS=$IFSdef  # Resetting IFS to default
 
 #Note:If you only want to check for certain SSIDs
 #Remove the # in in front of ssids=('mySSID1'.... below and put a # infront of all four lines above
