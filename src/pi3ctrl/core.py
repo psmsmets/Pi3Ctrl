@@ -43,64 +43,66 @@ def blink_led(led):
 
 
 # Function to execute the command and control LEDs
-def execute_command(button_index):
-    def wrapper(button_index):
-        """Function handled when the GPIO pin is triggered.
-        """
-        # From global
-        config = _config
-        buttons = _buttons
-        leds = _leds
+def execute_command(button) -> None:
+    """Function handled when the GPIO pin is triggered.
+    """
+    # From global
+    config = _config
+    buttons = _buttons
+    leds = _leds
 
-        # Get button gpio pin from config
-        button_pin = config['BUTTON_PINS'][button_index]
+    # Get button gpio pin from config
+    for i, b in enumerate(buttons):
+        if b == button:
+            button_index = i
+            button_pin = config['BUTTON_PINS'][button_index]
 
-        # Construct button command
-        command = "{player} {sf}".format(
-            player=config['SOUNDFILE_PLAYER'],
-            sf=os.path.expandvars(os.path.join(
-                config['SOUNDFILE_FOLDER'],
-                f"soundFile.{button_index}.GPIO{button_pin}"
-            ))
-        )
-        print(f"Button {button_index} for GPIO{button_pin} pressed, executing command: {command}")
+    # Construct button command
+    command = "{player} {sf}".format(
+        player=config['SOUNDFILE_PLAYER'],
+        sf=os.path.expandvars(os.path.join(
+            config['SOUNDFILE_FOLDER'],
+            f"soundFile.{button_index}.GPIO{button_pin}"
+        ))
+    )
+    print(f"Button {button_index} for GPIO{button_pin} pressed, executing command: {command}")
 
-        # Turn off all LEDs and blink the pressed button's LED
-        for i, led in enumerate(leds):
-            if i == button_index:
-                led.off()
-                blink_thread = Thread(target=blink_led, args=(leds[button_index],))
-                blink_thread.start()
-            else:
-                led.off()
+    # Turn off all LEDs and blink the pressed button's LED
+    for i, led in enumerate(leds):
+        if i == button_index:
+            led.off()
+            blink_thread = Thread(target=blink_led, args=(leds[button_index],))
+            blink_thread.start()
+        else:
+            led.off()
 
-        # Add trigger to database
-        with create_app().app_context() as ctx:
-            ctx.push()
-            new_trigger = Trigger(button=button_index, pin=button_pin)
-            db.session.add(new_trigger)
-            db.session.commit()
+    # Add trigger to database
+    with create_app().app_context() as ctx:
+        ctx.push()
+        new_trigger = Trigger(button=button_index, pin=button_pin)
+        db.session.add(new_trigger)
+        db.session.commit()
 
-        # Run the command
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        print(f"Command output:\n{result.stdout}")
+    # Run the command
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    print(f"Command output:\n{result.stdout}")
 
-        # Disable all buttons
-        for i, button in enumerate(buttons):
-            if i != button_index:
-                button.when_pressed = None
+    # Disable all buttons
+    for i, button in enumerate(buttons):
+        if i != button_index:
+            button.when_pressed = None
 
-        # Re-enable all buttons and set LEDs to standby mode after a delay
-        sleep(config['BUTTON_OFF_SECONDS'])
-        for i, button in enumerate(buttons):
-            if i != button_index:
-                button.when_pressed = execute_command(i)
+    # Re-enable all buttons and set LEDs to standby mode after a delay
+    sleep(config['BUTTON_OFF_SECONDS'])
+    for i, button in enumerate(buttons):
+        if i != button_index:
+            button.when_pressed = execute_command(i)
 
-        # Stop blinking and set LEDs to standby mode
-        blink_thread.join()
-        set_leds_standby()
+    # Stop blinking and set LEDs to standby mode
+    blink_thread.join()
+    set_leds_standby()
 
-    return wrapper
+    return None
 
 
 # Function to handle clean exit
@@ -117,8 +119,8 @@ def main():
     buttons = _buttons
 
     # Attach the execute_command function to each button
-    for i, button in enumerate(buttons):
-        button.when_pressed = execute_command(i)
+    for button in enumerate(buttons):
+        button.when_pressed = execute_command
 
     # Attach the exit handler to SIGINT (Ctrl+C)
     signal.signal(signal.SIGINT, exit_handler)
