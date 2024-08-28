@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# Script Name	: nmcli_add_ssid_wpa
+# Script Name	: nmcli_add_ssid_psk
 # Description	: Add a wireless network using Network-Manager (RPi Bookworm).
 # Args          : <ssid> <passphrase>
 # Author       	: Pieter Smets
@@ -9,7 +9,7 @@
 ##############################################################################
 
 # Set script name
-SCRIPT="nmcli_add_ssid_wpa"
+SCRIPT="nmcli_add_ssid_psk"
 
 
 # Message to display when bad usage.
@@ -56,8 +56,8 @@ if (("${#2}" < 8 )) | (("${#2}" > 63)); then
     badUsage "passphrase should be 8..63 characters."
 fi
 
-# Encrypt psk and add to wpa_supplicant.conf
-wpa_passphrase "$1" "$2" | sed '3d;2i\\tkey_mgmt=WPA-PSK\n\tpriority=0' | sudo tee -a $WPA_CONF
+# Add ssid with password to Network-Manager 
+nmcli d wifi connect "$1" password "$2"
 
 # Trigger connection
 sudo systemctl start pi3ctrl-wifi.service

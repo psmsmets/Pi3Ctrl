@@ -176,7 +176,10 @@ def create_app(test_config=None) -> Flask:
             return "Invalid request", 403
         if not is_RPi:
             return "I'm not Raspberry Pi", 418
-        ssid = os.popen("nmcli -f NAME,DEVICE con show --active | grep wlan0").read().rstrip("\n")
+        cmd = "nmcli -f NAME,DEVICE con show --active | grep wlan0"
+        ssid = os.popen(cmd).read().rstrip("\n")
+        if ssid.endswith("wlan0"):
+            ssid = ssid[:-len("wlan0")]
         return jsonify({"ssid": ssid}), 200
 
     @app.route("/_storage", methods=['GET'])
