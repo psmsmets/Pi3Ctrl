@@ -44,7 +44,7 @@ createAdHocNetwork()
     echo "Creating and activating $conn_name connection"
     # remove old connection
     if nmcli connection show | grep -w "$conn_name" > /dev/null; then
-        sudo nmcli connection delete "$conn_name"
+        nmcli connection delete "$conn_name"
     fi
     # create new connection
     nmcli connection add type wifi ifname wlan0 con-name "$conn_name" autoconnect yes ssid "$SSID"
@@ -63,7 +63,7 @@ killHotspot()
 {
     if nmcli connection show --active | grep -w "$conn_name" > /dev/null; then
         echo "Shutting Down $conn_name"
-        sudo nmcli connection down "$conn_name"
+        nmcli connection down "$conn_name"
     else
         echo "$conn_name is not active"
     fi
@@ -104,3 +104,6 @@ chksys()
 
 chksys
 chkWifiUp
+
+
+# todo: options to force hotspot and wrapper to list nmcli wlan connections (in range and configured)
