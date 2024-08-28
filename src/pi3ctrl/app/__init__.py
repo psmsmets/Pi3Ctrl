@@ -17,7 +17,6 @@ from flask_cors import CORS
 # Relative imports
 from .. import utils
 from ..database import db, Trigger
-from ..wifi import update_hostapd_config
 version_not_found = "[VERSION-NOT-FOUND]"
 try:
     from ..version import version
@@ -79,8 +78,8 @@ def create_app(test_config=None) -> Flask:
 
     # export autohotspot config
     with open("/tmp/pi3ctrl-autohotspot.env", "w") as file:
-        file.write(f"SSID={config.HOTSPOT_SSID}\n")
-        file.write(f"PSK={config.HOTSPOT_PSK}\n")
+        file.write(f"SSID={app.config['AUTOHOTSPOT_SSID']}\n")
+        file.write(f"PSK={app.config['AUTOHOTSPOT_PSK']}\n")
 
     # check if soundFiles exist
     def has_soundFile(button, pin):
