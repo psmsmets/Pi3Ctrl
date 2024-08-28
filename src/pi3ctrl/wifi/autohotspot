@@ -41,7 +41,7 @@ createAdHocNetwork()
 {
     source /tmp/pi3ctrl-autohotspot.env
 
-    echo "Creating Hotspot"
+    echo "Creating and activating AutoHotspot connection"
     # remove old connection
     if nmcli connection show | grep -w "$connection_name" > /dev/null; then
         sudo nmcli connection delete AutoHotspot
@@ -61,8 +61,12 @@ createAdHocNetwork()
 
 killHotspot()
 {
-    echo "Shutting Down Hotspot"
-    sudo nmcli connection down AutoHotspot
+    if nmcli connection show --active | grep -w "$connection_name" > /dev/null; then
+        echo "Shutting Down AutoHotspot"
+        sudo nmcli connection down AutoHotspot
+    else
+        echo "AutoHotspot is not active"
+    fi
 }
 
 
