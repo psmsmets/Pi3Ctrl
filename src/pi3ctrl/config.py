@@ -40,11 +40,9 @@ class DefaultConfig(object):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///pi3ctrl.sqlite3'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Hostapd
-    HOSTAPD_COUNTRY_CODE = 'BE'
-    HOSTAPD_CHANNEL = 6
-    HOSTAPD_SSID = '${HOSTNAME}'
-    HOSTAPD_WPA_PASSPHRASE = 'ChangePassword!'
+    # Autohotspot 
+    HOTSPOT_SSID = '${HOSTNAME}'
+    HOTSPOT_PSK = 'ChangePassword!'
 
 
 def get_config():

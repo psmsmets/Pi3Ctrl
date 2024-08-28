@@ -130,12 +130,12 @@ function verifySecret() {
 }
 
 
-function append_wpa_supplicant(form, secret) {
+function add_ssid_psk(form, secret) {
 
     const ssid = form.elements["inputSSID"].value
     const psk = form.elements["inputPSK"].value
 
-    getResponse("/_append_wpa_supplicant", { ssid: ssid, passphrase: psk, secret: secret }, 'POST')
+    getResponse("/_add_ssid_psk", { ssid: ssid, passphrase: psk, secret: secret }, 'POST')
     .then(resp => {
 
         if (resp.status !== 200) {
@@ -563,7 +563,7 @@ function loadContent(nav) {
                 case "wifi":
 		    loadConnectedSSID()
                     showPasswordToggle()
-                    validateForm('wifi-add', append_wpa_supplicant)
+                    validateForm('wifi-add', add_ssid_psk)
                     break;
 
                 case "status":

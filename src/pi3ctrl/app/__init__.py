@@ -77,9 +77,12 @@ def create_app(test_config=None) -> Flask:
             return False
         return any(r in request.headers['Referer'] for r in referers)
 
-    # update the hostapd config
-    hostapd = update_hostapd_config(app.config)
+    # export autohotspot config
+    with open("/tmp/pi3ctrl-autohotspot.env", "w") as file:
+        file.write(f"SSID={config.HOTSPOT_SSID}\n")
+        file.write(f"PSK={config.HOTSPOT_PSK}\n")
 
+    # check if soundFiles exist
     def has_soundFile(button, pin):
         file = os.path.join(app.config["SOUNDFILE_FOLDER"], soundFile(button, pin))
         return os.path.isfile(file)
@@ -87,7 +90,6 @@ def create_app(test_config=None) -> Flask:
     # prepare template globals
     context_globals = dict(
         has_soundFile=has_soundFile,
-        hostapd=hostapd,
         hostname=hostname.replace('.local', ''),
         services=utils.core_services + app.config['SYSTEMD_STATUS'],
         version=version,
@@ -142,8 +144,8 @@ def create_app(test_config=None) -> Flask:
             resp = utils.systemd_status(service)
         return jsonify(resp), 200
 
-    @app.route("/_append_wpa_supplicant", methods=['POST'])
-    def append_wpa_supplicant():
+    @app.route("/_add_ssid_psk", methods=['POST'])
+    def add_ssid_psk():
         if not is_internal_referer():
             return "Invalid request", 403
         if not is_RPi:
