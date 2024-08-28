@@ -17,7 +17,8 @@ core_services = ['pi3ctrl-core.service',
                  'pi3ctrl-wifi.service',
                  'nginx.service',
                  'dnsmasq.service',
-                 'hostapd.service']
+                 'hostapd.service'
+                 'wpa_supplicant.service']
 
 
 def is_raspberry_pi() -> bool:
