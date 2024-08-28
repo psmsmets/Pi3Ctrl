@@ -25,12 +25,6 @@ sudo systemctl unmask dnsmasq
 sudo systemctl disable dnsmasq
 sudo systemctl stop dnsmasq
 
-# hostapd
-sudo systemctl reset-failed hostapd
-sudo systemctl unmask hostapd
-sudo systemctl disable hostapd
-sudo systemctl stop hostapd
-
 # wpa_supplicant
 sudo systemctl unmask wpa_supplicant
 sudo systemctl disable wpa_supplicant
