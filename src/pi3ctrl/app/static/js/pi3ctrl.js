@@ -241,125 +241,128 @@ function dataMetrics() {
         })
 
         // date series data
-       const dateSeries = Object.keys(dataset.date).map(button => {
-           const data = Object.entries(dataset.date[button]).map(([date, count]) => {
-               const timestamp = new Date(date).getTime(); // Convert date to timestamp
-               return [timestamp, count];
-           });
+        const dateSeries = Object.keys(dataset.date).map(button => {
+            const data = Object.entries(dataset.date[button]).map(([date, count]) => {
+                const timestamp = new Date(date).getTime(); // Convert date to timestamp
+                return [timestamp, count];
+            });
 
-           return {
-               name: button,
-               data: data.sort((a, b) => a[0] - b[0]) // Ensure data is sorted by date
-           };
-       });
+            return {
+                name: button,
+                data: data.sort((a, b) => a[0] - b[0]) // Ensure data is sorted by date
+            };
+        });
 
-       // date line chart
-       Highcharts.chart('highcharts-date', {
-           chart: {
-               type: 'scatter'
-           },
-           title: {
-               text: 'Button Activity Over Time'
-           },
-           xAxis: {
-               type: 'datetime',
-               title: {
-                   text: 'Date'
-               }
-           },
-           yAxis: {
-               title: {
-                   text: 'Count'
-               }
-           },
-           plotOptions: {
-               scatter: {
-                   marker: {
-                       radius: 5,  // Size of the points
-                       symbol: 'circle'  // Shape of the points
-                   },
-                   lineWidth: 0  // Disable connecting lines
-               }
-           },
-           series: dateSeries
-       });
+        // date line chart
+        Highcharts.chart('highcharts-date', {
+            chart: {
+                type: 'scatter'
+            },
+            title: {
+                text: 'Button Activity Over Time'
+            },
+            xAxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Count'
+                }
+            },
+            plotOptions: {
+                scatter: {
+                    marker: {
+                        radius: 5,  // Size of the points
+                        symbol: 'circle'  // Shape of the points
+                    },
+                    lineWidth: 0  // Disable connecting lines
+                }
+            },
+            series: dateSeries,
+            backgroundColor: 'none'
+        });
 
-       // hour series data
-       const hourSeries = Object.keys(dataset.hour).map(button => {
-           const data = Array(24).fill(0);  // Initialize an array for 24 hours
+        // hour series data
+        const hourSeries = Object.keys(dataset.hour).map(button => {
+            const data = Array(24).fill(0);  // Initialize an array for 24 hours
   
-           Object.entries(dataset.hour[button]).forEach(([hour, count]) => {
-               data[parseInt(hour)] = count;  // Assign the count to the respective hour
-           });
+            Object.entries(dataset.hour[button]).forEach(([hour, count]) => {
+                data[parseInt(hour)] = count;  // Assign the count to the respective hour
+            });
 
-           return {
-               name: button,
-               data: data
-           };
-       });
+            return {
+                name: button,
+                data: data
+            };
+        });
 
-       // hour column chart
-       Highcharts.chart('highcharts-hour', {
-           chart: {
-               type: 'column'
-           },
-           title: {
-               text: 'Button Activity by Hour of the Day'
-           },
-           xAxis: {
-               categories: [...Array(24).keys()],  // Generates an array [0, 1, 2, ..., 23]
-               title: {
-                   text: 'Hour of the Day'
-               }
-           },
-           yAxis: {
-               title: {
-                   text: 'Number of Triggers'
-               },
-               allowDecimals: false
-           },
-           series: hourSeries
-       });
+        // hour column chart
+        Highcharts.chart('highcharts-hour', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Button Activity by Hour of the Day'
+            },
+            xAxis: {
+                categories: [...Array(24).keys()],  // Generates an array [0, 1, 2, ..., 23]
+                title: {
+                    text: 'Hour of the Day'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Number of Triggers'
+                },
+                allowDecimals: false
+            },
+            series: hourSeries,
+            backgroundColor: 'none'
+        });
 
-       // Map the weekday numbers to names
-       const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        // Map the weekday numbers to names
+        const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-       // weekday series
-       const weekdaySeries = Object.keys(dataset.weekday).map(button => {
-           const data = Array(7).fill(0);  // Initialize an array for 7 days
+        // weekday series
+        const weekdaySeries = Object.keys(dataset.weekday).map(button => {
+            const data = Array(7).fill(0);  // Initialize an array for 7 days
 
-           Object.entries(dataset.weekday[button]).forEach(([weekday, count]) => {
-               data[parseInt(weekday)] = count;  // Assign the count to the respective weekday
-           });
+            Object.entries(dataset.weekday[button]).forEach(([weekday, count]) => {
+                data[parseInt(weekday)] = count;  // Assign the count to the respective weekday
+            });
 
-           return {
-               name: button,
-               data: data
-           };
-       });
+            return {
+                name: button,
+                data: data
+            };
+        });
 
-       // weekday column chart
-       Highcharts.chart('highcharts-weekday', {
-           chart: {
-               type: 'column'
-           },
-           title: {
-               text: 'Button Activity by Day of the Week'
-           },
-           xAxis: {
-               categories: weekdays,  // ["Sunday", "Monday", "Tuesday", ...]
-               title: {
-                   text: 'Day of the Week'
-               }
-           },
-           yAxis: {
-               title: {
-                   text: 'Number of Triggers'
-               },
-               allowDecimals: false
-           },
-           series: weekdaySeries
-});
+        // weekday column chart
+        Highcharts.chart('highcharts-weekday', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Button Activity by Day of the Week'
+            },
+            xAxis: {
+                categories: weekdays,  // ["Sunday", "Monday", "Tuesday", ...]
+                title: {
+                    text: 'Day of the Week'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Number of Triggers'
+                },
+                allowDecimals: false
+            },
+            series: weekdaySeries,
+            backgroundColor: 'none'
+        });
 
     })
 
