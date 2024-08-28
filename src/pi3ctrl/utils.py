@@ -5,6 +5,7 @@ from logging import Logger
 from subprocess import Popen, PIPE
 import logging
 import os
+import re
 import socket
 import sys
 
@@ -46,6 +47,14 @@ def get_ipv4_address() -> str:
     except OSError:
         ip = None
     return ip or "127.0.0.1"
+
+
+def expand_env(var: str) -> str:
+    """Expand environment variable if defined."""
+    if re.sub(r'[^A-Z]', '', var.upper()) == 'HOSTNAME':
+        return socket.gethostname()
+    else:
+        return os.environ.get(var, var)
 
 
 def parse_config(configfiles, config=None, defaults=None, logger=None, environ=False, **kwargs):

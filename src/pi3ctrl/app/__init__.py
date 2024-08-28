@@ -77,6 +77,8 @@ def create_app(test_config=None) -> Flask:
         return any(r in request.headers['Referer'] for r in referers)
 
     # export autohotspot config
+    for var in ('SSID', 'PSK'):
+        app.config[f"AUTOHOTSPOT_{var}"] = utils.expand_env(app.config[f"AUTOHOTSPOT_{var}"])
     with open("/tmp/pi3ctrl-autohotspot.env", "w") as file:
         file.write(f"SSID={app.config['AUTOHOTSPOT_SSID']}\n")
         file.write(f"PSK={app.config['AUTOHOTSPOT_PSK']}\n")
@@ -178,7 +180,7 @@ def create_app(test_config=None) -> Flask:
         if not is_RPi:
             return "I'm not Raspberry Pi", 418
         cmd = "nmcli -f NAME,DEVICE con show --active | grep wlan0"
-        ssid = os.popen(cmd).read().rstrip("\n")
+        ssid = os.popen(cmd).read().rstrip("\n").strip()
         if ssid.endswith("wlan0"):
             ssid = ssid[:-len("wlan0")]
         return jsonify({"ssid": ssid}), 200
