@@ -42,6 +42,11 @@ createAdHocNetwork()
     source /tmp/pi3ctrl-autohotspot.env
 
     echo "Creating Hotspot"
+    # remove old connection
+    if nmcli connection show | grep -w "$connection_name" > /dev/null; then
+        sudo nmcli connection delete AutoHotspot
+    fi
+    # create new connection
     nmcli connection add type wifi ifname wlan0 con-name AutoHotspot autoconnect yes ssid "$SSID"
     nmcli connection modify AutoHotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
     nmcli connection modify AutoHotspot 802-11-wireless-security.key-mgmt wpa-psk
@@ -49,6 +54,7 @@ createAdHocNetwork()
     nmcli connection modify AutoHotspot 802-11-wireless-security.pairwise ccmp
     nmcli connection modify AutoHotspot 802-11-wireless-security.group ccmp
     nmcli connection modify AutoHotspot 802-11-wireless-security.psk "$PSK"
+    # take connection online
     nmcli connection up AutoHotspot
 }
 
@@ -57,7 +63,6 @@ killHotspot()
 {
     echo "Shutting Down Hotspot"
     sudo nmcli connection down AutoHotspot
-    sudo nmcli connection delete AutoHotspot
 }
 
 
