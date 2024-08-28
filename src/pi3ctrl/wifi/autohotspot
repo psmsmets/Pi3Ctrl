@@ -34,38 +34,38 @@ function isRoot
 isRoot
 
 
-wifidev="wlan0" #device name to use. Default is wlan0.
-#use the command: iw dev, to see Wi-Fi interface name
+wlan_dev="wlan0" #device name to use. Default is wlan0.
+conn_name="AutoHotspot"
 
 createAdHocNetwork()
 {
     source /tmp/pi3ctrl-autohotspot.env
 
-    echo "Creating and activating AutoHotspot connection"
+    echo "Creating and activating $conn_name connection"
     # remove old connection
-    if nmcli connection show | grep -w "$connection_name" > /dev/null; then
-        sudo nmcli connection delete AutoHotspot
+    if nmcli connection show | grep -w "$conn_name" > /dev/null; then
+        sudo nmcli connection delete "$conn_name"
     fi
     # create new connection
-    nmcli connection add type wifi ifname wlan0 con-name AutoHotspot autoconnect yes ssid "$SSID"
-    nmcli connection modify AutoHotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
-    nmcli connection modify AutoHotspot 802-11-wireless-security.key-mgmt wpa-psk
-    nmcli connection modify AutoHotspot 802-11-wireless-security.proto rsn
-    nmcli connection modify AutoHotspot 802-11-wireless-security.pairwise ccmp
-    nmcli connection modify AutoHotspot 802-11-wireless-security.group ccmp
-    nmcli connection modify AutoHotspot 802-11-wireless-security.psk "$PSK"
+    nmcli connection add type wifi ifname wlan0 con-name "$conn_name" autoconnect yes ssid "$SSID"
+    nmcli connection modify "$conn_name" 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+    nmcli connection modify "$conn_name" 802-11-wireless-security.key-mgmt wpa-psk
+    nmcli connection modify "$conn_name" 802-11-wireless-security.proto rsn
+    nmcli connection modify "$conn_name" 802-11-wireless-security.pairwise ccmp
+    nmcli connection modify "$conn_name" 802-11-wireless-security.group ccmp
+    nmcli connection modify "$conn_name" 802-11-wireless-security.psk "$PSK"
     # take connection online
-    nmcli connection up AutoHotspot
+    nmcli connection up "$conn_name"
 }
 
 
 killHotspot()
 {
-    if nmcli connection show --active | grep -w "$connection_name" > /dev/null; then
-        echo "Shutting Down AutoHotspot"
-        sudo nmcli connection down AutoHotspot
+    if nmcli connection show --active | grep -w "$conn_name" > /dev/null; then
+        echo "Shutting Down $conn_name"
+        sudo nmcli connection down "$conn_name"
     else
-        echo "AutoHotspot is not active"
+        echo "$conn_name is not active"
     fi
 }
 
@@ -75,10 +75,10 @@ chkWifiUp()
     echo "Checking Wi-Fi connection ok"
     killHotspot
     sleep 20 # Give time for connection to be completed to router
-    if ! nmcli -f NAME,DEVICE con show --active | grep "$wifidev" >/dev/null 2>&1 ;
+    if ! nmcli -f NAME,DEVICE con show --active | grep "$wlan_dev" >/dev/null 2>&1 ;
     then # Failed to connect to Wi-Fi (check your Wi-Fi settings, password etc)
-        echo 'Wi-Fi failed to connect, falling back to Hotspot.'
-        wpa_cli terminate "$wifidev" >/dev/null 2>&1
+        echo "Wi-Fi failed to connect, falling back to $conn_name."
+        wpa_cli terminate "$wlan_dev" >/dev/null 2>&1
         createAdHocNetwork
     fi
 }
