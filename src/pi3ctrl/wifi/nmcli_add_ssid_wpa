@@ -1,0 +1,66 @@
+#!/bin/bash
+
+##############################################################################
+# Script Name	: nmcli_add_ssid_wpa
+# Description	: Add a wireless network using Network-Manager (RPi Bookworm).
+# Args          : <ssid> <passphrase>
+# Author       	: Pieter Smets
+# Email         : mail@pietersmets.be
+##############################################################################
+
+# Set script name
+SCRIPT="nmcli_add_ssid_wpa"
+
+
+# Message to display when bad usage.
+function badUsage
+{
+    local message="$1"
+    local txt=(
+"Connect to a wireless network providing the ssid and the passphrase."
+"Usage: $SCRIPT <ssid> <passphrase>"
+    )
+
+    [[ $message ]] && printf "\n$message\n"
+
+    printf "%s\n" "${txt[@]}"
+    exit -1
+}
+
+#
+# Check if device is a Raspberry Pi
+#
+function isRaspberryPi
+{
+    local pi=""
+    if [ -f /proc/device-tree/model ];
+    then
+        pi=$( cat /proc/device-tree/model | tr '\0' '\n' | grep "Raspberry Pi" )
+    fi
+    if [ "x${pi}" == "x" ];
+    then
+        echo "Error: device is not a Raspberry Pi!"
+        exit 1
+    fi
+}
+isRaspberryPi
+
+# Check input arguments
+if (($# != 2 )); then
+    badUsage "Illegal number of arguments"
+fi
+if (("${#1}" < 1 )) | (("${#1}" > 63)); then
+    badUsage "ssid should be 1..63 characters."
+fi
+if (("${#2}" < 8 )) | (("${#2}" > 63)); then
+    badUsage "passphrase should be 8..63 characters."
+fi
+
+# Encrypt psk and add to wpa_supplicant.conf
+wpa_passphrase "$1" "$2" | sed '3d;2i\\tkey_mgmt=WPA-PSK\n\tpriority=0' | sudo tee -a $WPA_CONF
+
+# Trigger connection
+sudo systemctl start pi3ctrl-wifi.service
+
+# Done
+exit 0

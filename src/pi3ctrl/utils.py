@@ -111,8 +111,8 @@ def systemd_status_all() -> dict:
 def wifi_ssid_passphrase(ssid: str, passphrase: str) -> dict:
     """Add Wi-Fi ssid and passphrase to wpa_supplicant and connect.
     """
-    cmd = os.path.join(os.path.dirname(sys.executable), 'append_wpa_supplicant')
-    return system_call(['/usr/bin/sudo', cmd, ssid, passphrase], as_dict=True)
+    cmd = ['/usr/bin/sudo', 'nmcli', 'd', 'wifi', 'connect', ssid, 'password', passphrase]
+    return system_call(cmd, as_dict=True)
 
 
 def wifi_autohotspot() -> dict:

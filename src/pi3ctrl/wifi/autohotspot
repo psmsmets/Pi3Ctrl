@@ -224,6 +224,7 @@ then
         echo "Wi-Fi already connected to a network"
     else #ssid exists and no hotspot running connect to Wi-Fi network
         echo "Connecting to the Wi-Fi Network"
+        rm -f /var/run/wpa_supplicant/${wifidev}
         wpa_supplicant -B -i "$wifidev" -c /etc/wpa_supplicant/wpa_supplicant.conf >/dev/null 2>&1
         ChkWifiUp
     fi
