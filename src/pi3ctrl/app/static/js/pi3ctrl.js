@@ -256,7 +256,7 @@ function dataMetrics() {
        // date line chart
        Highcharts.chart('highcharts-date', {
            chart: {
-               type: 'line'
+               type: 'scatter'
            },
            title: {
                text: 'Button Activity Over Time'
@@ -270,6 +270,15 @@ function dataMetrics() {
            yAxis: {
                title: {
                    text: 'Count'
+               }
+           },
+           plotOptions: {
+               scatter: {
+                   marker: {
+                       radius: 5,  // Size of the points
+                       symbol: 'circle'  // Shape of the points
+                   },
+                   lineWidth: 0  // Disable connecting lines
                }
            },
            series: dateSeries
