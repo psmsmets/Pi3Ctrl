@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# Script Name	: nmcli_add_ssid_psk
+# Script Name	: pi3ctrl-add-ssid
 # Description	: Add a wireless network using Network-Manager (RPi Bookworm).
 # Args          : <ssid> <passphrase>
 # Author       	: Pieter Smets
@@ -9,12 +9,14 @@
 ##############################################################################
 
 # Set script name
-SCRIPT="nmcli_add_ssid_psk"
-
+SCRIPT="pi3ctrl-add-ssid"
 
 # Message to display when bad usage.
-function badUsage
-{
+##############################################################################
+# Function: badUsage
+# Description: Displays usage information for the script.
+##############################################################################
+function badUsage {
     local message="$1"
     local txt=(
 "Connect to a wireless network providing the ssid and the passphrase."
@@ -27,11 +29,11 @@ function badUsage
     exit -1
 }
 
-#
-# Check if device is a Raspberry Pi
-#
-function isRaspberryPi
-{
+##############################################################################
+# Function: isRaspberryPi
+# Description: Ensures the script is running on a Raspberry Pi.
+##############################################################################
+function isRaspberryPi {
     local pi=""
     if [ -f /proc/device-tree/model ];
     then
@@ -44,6 +46,18 @@ function isRaspberryPi
     fi
 }
 isRaspberryPi
+
+##############################################################################
+# Function: isRoot
+# Description: Ensures the script is running with root privileges.
+##############################################################################
+function isRoot {
+    if [ "$EUID" != "0" ]; then
+        echo "Error: should be run as root"
+        exit 1
+    fi
+}
+isRoot
 
 # Check input arguments
 if (($# != 2 )); then

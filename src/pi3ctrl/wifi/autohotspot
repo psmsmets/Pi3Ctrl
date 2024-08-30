@@ -1,11 +1,56 @@
 #!/bin/bash
 
+##############################################################################
+# Script Name   : autohotspot
+# Description   : This script connects to a known wireless network if available,
+#                 otherwise, it starts a local hotspot. The script is designed
+#                 for systems using the Network Manager Command Line Interface (nmcli).
+# Args          : [options]
+# Author        : Pieter Smets
+# Email         : mail@pietersmets.be
+##############################################################################
 
-function isRaspberryPi
+# Default values
+WLAN_DEV="wlan0" # Device name to use. Default is wlan0.
+CONN_NAME="AutoHotspot" # Default connection name for the hotspot.
+
+##############################################################################
+# Function: usage
+# Description: Displays usage information for the script.
+##############################################################################
+function usage
 {
-#
-# Check if device is a Raspberry Pi
-#
+    local txt=(
+"Autohotspot "
+"Usage:"
+"  $SCRIPT [options] <action>"
+"Actions:"
+"  install        Full installation of the Multi-Ear services:"
+"                  * install Python3, dnsmasq, hostapd, nginx, influxdb, telegraf, grafana"
+"                  * configure system services"
+"                  * create Python3 virtual environment py37 in ~/.py37"
+"                  * install and activate the Multi-EAR services"
+"  configure      Configure the Multi-EAR services and dependencies."
+"  check          Verify the installed Multi-EAR services and dependencies."
+"  update         Update the existing Multi-EAR services and dependencies."
+"  uninstall      Remove the installed Multi-EAR services, data, configurations and "
+"                 the Python3 virtual environment."
+"Options:"
+"  --help, -h     Print help."
+"  --version, -v  Print version."
+""
+"$SCRIPT only works with the Network Manager Command Line Interface (nmcli)."
+    )
+
+    printf "%s\n" "${txt[@]}"
+    exit 0
+}
+
+##############################################################################
+# Function: isRaspberryPi
+# Description: Ensures the script is running on a Raspberry Pi.
+##############################################################################
+function isRaspberryPi {
     local pi=""
     if [ -f /proc/device-tree/model ];
     then
@@ -17,93 +62,171 @@ function isRaspberryPi
         exit 1
     fi
 }
-isRaspberryPi
 
-
-function isRoot
-{
-#
-# Check if sudo mode is true
-#
-    if [ "$EUID" != "0" ];
-    then
+##############################################################################
+# Function: isRoot
+# Description: Ensures the script is running with root privileges.
+##############################################################################
+function isRoot {
+    if [ "$EUID" != "0" ]; then
         echo "Error: should be run as root"
         exit 1
     fi
 }
-isRoot
 
-
-wlan_dev="wlan0" #device name to use. Default is wlan0.
-conn_name="AutoHotspot"
-
-createAdHocNetwork()
-{
+##############################################################################
+# Function: do_launchHotspot
+# Description: Creates and activates a hotspot with the specified SSID and PSK.
+##############################################################################
+function do_launchHotspot {
     source /tmp/pi3ctrl-autohotspot.env
 
-    echo "Creating and activating $conn_name connection"
-    # remove old connection
-    if nmcli connection show | grep -w "$conn_name" > /dev/null; then
-        nmcli connection delete "$conn_name"
+    do_killHotspot
+
+    echo "Creating and activating $CONN_NAME connection"
+    # Remove old connection
+    if nmcli connection show | grep -w "$CONN_NAME" > /dev/null; then
+        nmcli connection delete "$CONN_NAME"
     fi
-    # create new connection
-    nmcli connection add type wifi ifname wlan0 con-name "$conn_name" autoconnect yes ssid "$SSID"
-    nmcli connection modify "$conn_name" 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
-    nmcli connection modify "$conn_name" 802-11-wireless-security.key-mgmt wpa-psk
-    nmcli connection modify "$conn_name" 802-11-wireless-security.proto rsn
-    nmcli connection modify "$conn_name" 802-11-wireless-security.pairwise ccmp
-    nmcli connection modify "$conn_name" 802-11-wireless-security.group ccmp
-    nmcli connection modify "$conn_name" 802-11-wireless-security.psk "$PSK"
-    # take connection online
-    nmcli connection up "$conn_name"
+    # Create new connection
+    nmcli connection add type wifi ifname "$WLAN_DEV" con-name "$CONN_NAME" autoconnect yes ssid "$SSID"
+    nmcli connection modify "$CONN_NAME" 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+    nmcli connection modify "$CONN_NAME" 802-11-wireless-security.key-mgmt wpa-psk
+    nmcli connection modify "$CONN_NAME" 802-11-wireless-security.proto rsn
+    nmcli connection modify "$CONN_NAME" 802-11-wireless-security.pairwise ccmp
+    nmcli connection modify "$CONN_NAME" 802-11-wireless-security.group ccmp
+    nmcli connection modify "$CONN_NAME" 802-11-wireless-security.psk "$PSK"
+    # Take connection online
+    nmcli connection up "$CONN_NAME"
 }
 
-
-killHotspot()
-{
-    if nmcli connection show --active | grep -w "$conn_name" > /dev/null; then
-        echo "Shutting Down $conn_name"
-        nmcli connection down "$conn_name"
-    else
-        echo "$conn_name is not active"
-    fi
-}
-
-
-chkWifiUp()
-{
-    echo "Checking Wi-Fi connection ok"
-    killHotspot
-    sleep 20 # Give time for connection to be completed to router
-    if ! nmcli -f NAME,DEVICE con show --active | grep "$wlan_dev" >/dev/null 2>&1 ;
-    then # Failed to connect to Wi-Fi (check your Wi-Fi settings, password etc)
-        echo "Wi-Fi failed to connect, falling back to $conn_name."
-        wpa_cli terminate "$wlan_dev" >/dev/null 2>&1
-        createAdHocNetwork
+##############################################################################
+# Function: do_killHotspot
+# Description: Deactivates the currently active hotspot connection.
+##############################################################################
+function do_killHotspot {
+    if nmcli connection show --active | grep -w "$CONN_NAME" > /dev/null; then
+        echo "Connection $CONN_NAME currently active. Shutting down."
+        nmcli connection down "$CONN_NAME"
     fi
 }
 
+##############################################################################
+# Function: do_wificheck
+# Description: Checks if the Wi-Fi connection is active. If not, it falls back
+#              to starting the hotspot.
+##############################################################################
+function do_wificheck {
+    do_systemcheck
+    do_killHotspot
+    echo "Checking Wi-Fi connection"
+    sleep 20 # Give time for connection to complete to the router
+    if ! nmcli -f NAME,DEVICE con show --active | grep "$WLAN_DEV" >/dev/null 2>&1; then
+        echo "Wi-Fi failed to connect, falling back to $CONN_NAME."
+        wpa_cli terminate "$WLAN_DEV" >/dev/null 2>&1
+        do_launchHotspot
+    fi
+}
 
-chksys()
-{
-    # After some system updates hostapd gets masked using Raspbian Buster, and above.
-    # This checks and fixes the issue and also checks dnsmasq is ok so the hotspot can be generated.
-    # Check dnsmasq is disabled
-    if systemctl -all list-unit-files dnsmasq.service | grep "dnsmasq.service masked" >/dev/null 2>&1;
-    then
-	systemctl unmask dnsmasq >/dev/null 2>&1
+##############################################################################
+# Function: do_systemcheck
+# Description: Ensures the system is in a proper state to run the hotspot.
+#              - Ensures the script is run as root.
+#              - Checks and fixes issues with hostapd and dnsmasq services.
+#              - Unblocks the WLAN device.
+##############################################################################
+function do_systemcheck {
+    # Ensure user is root
+    isRoot
+    # Check and fix potential issues with dnsmasq and hostapd services
+    if systemctl -all list-unit-files dnsmasq.service | grep "dnsmasq.service masked" >/dev/null 2>&1; then
+        systemctl unmask dnsmasq >/dev/null 2>&1
     fi
-    if systemctl -all list-unit-files dnsmasq.service | grep "dnsmasq.service enabled" >/dev/null 2>&1;
-    then
-	systemctl disable dnsmasq >/dev/null 2>&1
-	systemctl stop dnsmasq >/dev/null 2>&1
+    if systemctl -all list-unit-files dnsmasq.service | grep "dnsmasq.service enabled" >/dev/null 2>&1; then
+        systemctl disable dnsmasq >/dev/null 2>&1
+        systemctl stop dnsmasq >/dev/null 2>&1
     fi
-    # Make sure wlan is unblocked
+    # Unblock WLAN
     rfkill unblock wlan
 }
 
-chksys
-chkWifiUp
 
+##############################################################################
+# Function: do_forcehotspot
+# Description: Forces the creation and activation of a hotspot.
+##############################################################################
+function do_forcehotspot {
+    do_systemcheck
+    do_launchHotspot
+}
 
-# todo: options to force hotspot and wrapper to list nmcli wlan connections (in range and configured)
+# Parse command line arguments
+while getopts ":d:f:n:p:s:h" flag; do
+    case "${flag}" in
+        d) WLAN_DEV=${OPTARG};; # Set WLAN device
+        f) 
+            do_forcehotspot
+            exit 0 ;;
+        n) CONN_NAME=${OPTARG};; # Set connection name
+        p) PSK=${OPTARG};; # Set connection PSK
+        s) SSID=${OPTARG};; # Set connection SSID
+        h) usage # Show help and exit
+            exit 0 ;;
+        \?) 
+            echo "Invalid option: -$OPTARG" >&2
+            usage
+            exit 1 ;;
+        :) 
+            echo "Option -$OPTARG requires an argument." >&2
+            usage
+            exit 1 ;;
+    esac
+done
+
+# Handle long options manually
+shift $((OPTIND - 1))
+while (( "$#" )); do
+    case "$1" in
+        --device)
+            WLAN_DEV="$2"
+            shift 2
+            ;;
+        --force)
+            do_forcehotspot
+            exit 0
+            ;;
+        --name)
+            CONN_NAME="$2"
+            shift 2
+            ;;
+        --psk)
+            PSK="$2"
+            shift 2
+            ;;
+        --ssid)
+            SSID="$2"
+            shift 2
+            ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        --) # End of options
+            shift
+            break
+            ;;
+        -*|--*) # Unsupported flags
+            echo "Error: Unsupported option $1" >&2
+            usage
+            exit 1
+            ;;
+        *) # Positional arguments
+            break
+            ;;
+    esac
+done
+
+# Perform system check and Wi-Fi check
+do_systemcheck
+do_wificheck
+exit 0
