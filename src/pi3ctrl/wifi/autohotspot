@@ -21,25 +21,27 @@ CONN_NAME="AutoHotspot" # Default connection name for the hotspot.
 function usage
 {
     local txt=(
-"Autohotspot "
-"Usage:"
-"  $SCRIPT [options] <action>"
-"Actions:"
-"  install        Full installation of the Multi-Ear services:"
-"                  * install Python3, dnsmasq, hostapd, nginx, influxdb, telegraf, grafana"
-"                  * configure system services"
-"                  * create Python3 virtual environment py37 in ~/.py37"
-"                  * install and activate the Multi-EAR services"
-"  configure      Configure the Multi-EAR services and dependencies."
-"  check          Verify the installed Multi-EAR services and dependencies."
-"  update         Update the existing Multi-EAR services and dependencies."
-"  uninstall      Remove the installed Multi-EAR services, data, configurations and "
-"                 the Python3 virtual environment."
-"Options:"
-"  --help, -h     Print help."
-"  --version, -v  Print version."
+"Autohotspot: A script to manage Wi-Fi connections and automatically create"
+"a hotspot when a known Wi-Fi network is not available."
 ""
-"$SCRIPT only works with the Network Manager Command Line Interface (nmcli)."
+"Usage:"
+"  $SCRIPT [options]"
+""
+"Options:"
+"  --device, -d   Set the Wi-Fi device to use (e.g., wlan0). Defaults to wlan0."
+"  --force, -f    Force the creation of a hotspot, even if a Wi-Fi network is available."
+"  --name, -n     Set the hotspot connection name. Defaults to 'AutoHotspot'."
+"  --psk, -p      Set the WPA2 Pre-Shared Key (password) for the hotspot."
+"  --ssid, -s     Set the SSID (network name) for the hotspot."
+"  --help, -h     Display this help message and exit."
+""
+"Examples:"
+"  $SCRIPT --device wlan1 --ssid MyHotspot --psk secret123"
+"  $SCRIPT --force"
+""
+"Note:"
+"  This script only works with the Network Manager Command Line Interface (nmcli)."
+"  It is designed to run on Raspberry Pi devices."
     )
 
     printf "%s\n" "${txt[@]}"
@@ -164,66 +166,50 @@ function do_forcehotspot {
 }
 
 # Parse command line arguments
-while getopts ":d:f:n:p:s:h" flag; do
-    case "${flag}" in
-        d) WLAN_DEV=${OPTARG};; # Set WLAN device
-        f) 
-            do_forcehotspot
-            exit 0 ;;
-        n) CONN_NAME=${OPTARG};; # Set connection name
-        p) PSK=${OPTARG};; # Set connection PSK
-        s) SSID=${OPTARG};; # Set connection SSID
-        h) usage # Show help and exit
-            exit 0 ;;
-        \?) 
-            echo "Invalid option: -$OPTARG" >&2
-            usage
-            exit 1 ;;
-        :) 
-            echo "Option -$OPTARG requires an argument." >&2
-            usage
-            exit 1 ;;
-    esac
-done
+OPTIONS=$(getopt -o d:fn:p:s:h --long device:,force,name:,psk:,ssid:,help -- "$@")
+if [ $? -ne 0 ]; then
+    echo "Failed to parse options."
+    exit 1
+fi
 
-# Handle long options manually
-shift $((OPTIND - 1))
-while (( "$#" )); do
+eval set -- "$OPTIONS"
+
+while true; do
     case "$1" in
-        --device)
+        -d|--device)
             WLAN_DEV="$2"
             shift 2
             ;;
-        --force)
+        -f|--force)
             do_forcehotspot
             exit 0
             ;;
-        --name)
+        -n|--name)
             CONN_NAME="$2"
             shift 2
             ;;
-        --psk)
+        -p|--psk)
             PSK="$2"
             shift 2
             ;;
-        --ssid)
+        -s|--ssid)
             SSID="$2"
             shift 2
             ;;
-        --help)
+        -h|--help)
             usage
             exit 0
             ;;
-        --) # End of options
+        --)
             shift
             break
             ;;
-        -*|--*) # Unsupported flags
+        -*|--*)
             echo "Error: Unsupported option $1" >&2
             usage
             exit 1
             ;;
-        *) # Positional arguments
+        *)
             break
             ;;
     esac
