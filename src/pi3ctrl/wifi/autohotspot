@@ -121,10 +121,13 @@ function do_wificheck {
     do_killHotspot
     echo "Checking Wi-Fi connection"
     sleep 20 # Give time for connection to complete to the router
-    if ! nmcli -f NAME,DEVICE con show --active | grep "$WLAN_DEV" >/dev/null 2>&1; then
+    if ! nmcli -t -f NAME,DEVICE con show --active | grep "$WLAN_DEV" >/dev/null 2>&1; then
         echo "Wi-Fi failed to connect, falling back to $CONN_NAME."
         wpa_cli terminate "$WLAN_DEV" >/dev/null 2>&1
         do_launchHotspot
+    else
+        active=$(nmcli -t -f NAME,DEVICE con show --active | grep "$WLAN_DEV")
+        echo "Connected to ${active%%:*}"
     fi
 }
 
